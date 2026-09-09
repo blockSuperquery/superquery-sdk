@@ -4,7 +4,6 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/seo'],
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
-  compatibilityDate: '2026-06-30',
   site: {
     url: siteUrl,
     name: 'SuperQuery',
@@ -12,6 +11,8 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
     indexable: process.env.NUXT_SITE_INDEXABLE !== 'false'
   },
+  colorMode: { preference: 'light', fallback: 'light', classSuffix: '' },
+  ui: { fonts: false, colorMode: true },
   routeRules: {
     '/': { prerender: true },
     '/sdk': { prerender: true },
@@ -23,17 +24,20 @@ export default defineNuxtConfig({
     '/grants': { prerender: true },
     '/portal': { prerender: true, robots: false }
   },
+  experimental: {
+    defaults: { nuxtLink: { prefetchOn: { interaction: true } } }
+  },
+  compatibilityDate: '2026-06-30',
   nitro: {
     compressPublicAssets: true,
     prerender: { crawlLinks: true, failOnError: true }
   },
-  experimental: {
-    defaults: { nuxtLink: { prefetchOn: { interaction: true } } }
+  eslint: {
+    config: { stylistic: { commaDangle: 'never', braceStyle: '1tbs' } }
   },
-  sitemap: { exclude: ['/portal'] },
-  robots: { disallow: ['/portal'] },
   // A checked-in social card avoids a native image renderer during deployments.
   ogImage: { enabled: false },
+  robots: { disallow: ['/portal'] },
   schemaOrg: {
     identity: {
       type: 'Organization',
@@ -43,9 +47,5 @@ export default defineNuxtConfig({
       sameAs: ['https://github.com/blockSuperquery']
     }
   },
-  ui: { fonts: false, colorMode: true },
-  colorMode: { preference: 'light', fallback: 'light', classSuffix: '' },
-  eslint: {
-    config: { stylistic: { commaDangle: 'never', braceStyle: '1tbs' } }
-  }
+  sitemap: { exclude: ['/portal'] }
 })

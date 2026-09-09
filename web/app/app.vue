@@ -25,25 +25,64 @@ const columns = [
 
 <template>
   <UApp>
-    <a href="#main-content" class="skip-link">Skip to content</a>
-    <UHeader title="SuperQuery" :ui="{ root: 'bg-default/95', container: 'gap-4' }">
+    <a
+      href="#main-content"
+      class="skip-link"
+    >Skip to content</a>
+    <UHeader
+      title="SuperQuery"
+      :ui="{ root: 'bg-default/95', container: 'gap-4' }"
+    >
       <template #title>
-        <AppLogo variant="mark" class="size-8 shrink-0" />
+        <AppLogo
+          variant="mark"
+          class="size-8 shrink-0"
+        />
         <span class="font-display text-xl font-bold tracking-tight">SuperQuery</span>
       </template>
-      <UNavigationMenu :items="navigation" aria-label="Main navigation" />
+      <UNavigationMenu
+        :items="navigation"
+        aria-label="Main navigation"
+      />
       <template #right>
         <UColorModeButton />
-        <UButton :to="links.sdk" target="_blank" icon="i-lucide-github" variant="ghost" color="neutral" aria-label="SuperQuery on GitHub" class="hidden sm:inline-flex" />
-        <UButton to="/docs" trailing-icon="i-lucide-arrow-up-right" class="hidden sm:inline-flex">Start building</UButton>
+        <UButton
+          :to="links.sdk"
+          target="_blank"
+          icon="i-lucide-github"
+          variant="ghost"
+          color="neutral"
+          aria-label="SuperQuery on GitHub"
+          class="hidden sm:inline-flex"
+        />
+        <UButton
+          to="/docs"
+          trailing-icon="i-lucide-arrow-up-right"
+          class="hidden sm:inline-flex"
+        >
+          Start building
+        </UButton>
       </template>
       <template #body>
-        <UNavigationMenu :items="navigation" orientation="vertical" aria-label="Mobile navigation" />
+        <UNavigationMenu
+          :items="navigation"
+          orientation="vertical"
+          aria-label="Mobile navigation"
+        />
         <USeparator class="my-6" />
-        <UButton to="/docs" block trailing-icon="i-lucide-arrow-right">Start building</UButton>
+        <UButton
+          to="/docs"
+          block
+          trailing-icon="i-lucide-arrow-right"
+        >
+          Start building
+        </UButton>
       </template>
     </UHeader>
-    <UMain id="main-content" tabindex="-1">
+    <UMain
+      id="main-content"
+      tabindex="-1"
+    >
       <NuxtPage />
     </UMain>
     <UFooter class="border-t border-default">
@@ -51,22 +90,50 @@ const columns = [
         <UContainer class="py-12 sm:py-16">
           <UFooterColumns :columns="columns">
             <template #left>
-              <NuxtLink to="/" class="inline-flex items-center gap-2 font-display text-xl font-bold text-highlighted" aria-label="SuperQuery home">
-                <AppLogo variant="mark" class="size-8" />SuperQuery
+              <NuxtLink
+                to="/"
+                class="inline-flex items-center gap-2 font-display text-xl font-bold text-highlighted"
+                aria-label="SuperQuery home"
+              >
+                <AppLogo
+                  variant="mark"
+                  class="size-8"
+                />SuperQuery
               </NuxtLink>
-              <p class="mt-4 max-w-xs text-sm leading-6 text-muted">From chain events to useful data.<br>Open source. Written in Rust. Built in public.</p>
+              <p class="mt-4 max-w-xs text-sm leading-6 text-muted">
+                From chain events to useful data.<br>Open source. Written in Rust. Built in public.
+              </p>
             </template>
             <template #right>
-              <p class="font-display font-semibold text-highlighted">Follow the build.</p>
-              <p class="my-3 max-w-56 text-sm leading-6 text-muted">Track new capabilities and releases directly on GitHub.</p>
-              <UButton :to="`${links.sdk}/subscription`" target="_blank" color="neutral" variant="outline" trailing-icon="i-lucide-arrow-up-right">Watch the project</UButton>
+              <p class="font-display font-semibold text-highlighted">
+                Follow the build.
+              </p>
+              <p class="my-3 max-w-56 text-sm leading-6 text-muted">
+                Track new capabilities and releases directly on GitHub.
+              </p>
+              <UButton
+                :to="`${links.sdk}/subscription`"
+                target="_blank"
+                color="neutral"
+                variant="outline"
+                trailing-icon="i-lucide-arrow-up-right"
+              >
+                Watch the project
+              </UButton>
             </template>
           </UFooterColumns>
         </UContainer>
       </template>
-      <template #left><p class="text-xs text-muted">© {{ new Date().getFullYear() }} SuperQuery</p></template>
+      <template #left>
+        <p class="text-xs text-muted">
+          © {{ new Date().getFullYear() }} SuperQuery
+        </p>
+      </template>
       <template #right>
-        <NuxtLink to="/status" class="inline-flex items-center gap-2 text-xs text-muted"><span class="size-1.5 rounded-full bg-amber-500" />Platform in development</NuxtLink>
+        <NuxtLink
+          to="/status"
+          class="inline-flex items-center gap-2 text-xs text-muted"
+        ><span class="size-1.5 rounded-full bg-amber-500" />Platform in development</NuxtLink>
       </template>
     </UFooter>
   </UApp>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { links } from '~/utils/project'
+
 useSeoMeta({ title: 'Roadmap', description: 'Track SuperQuery development across the Rust SDK, indexing node, and GraphQL query service. See what is available, next, and planned.' })
 const tracks = [
   { title: 'Developer tooling', repo: links.sdk, milestones: [
@@ -22,21 +23,64 @@ const tracks = [
 
 <template>
   <div>
-    <PageIntro eyebrow="Built in public" title="A clear view of what comes next." description="Progress across the three repositories, with working foundations and unfinished milestones made explicit." />
+    <PageIntro
+      eyebrow="Built in public"
+      title="A clear view of what comes next."
+      description="Progress across the three repositories, with working foundations and unfinished milestones made explicit."
+    />
     <UContainer class="space-y-12 pb-20">
-      <UAlert title="A development roadmap, without release-date promises" description="This snapshot reflects the repository documentation reviewed on 9 September 2026. Follow each repository for the latest implementation details." icon="i-lucide-git-branch" color="info" variant="soft" />
-      <section v-for="track in tracks" :key="track.title" class="space-y-5">
+      <UAlert
+        title="A development roadmap, without release-date promises"
+        description="This snapshot reflects the repository documentation reviewed on 9 September 2026. Follow each repository for the latest implementation details."
+        icon="i-lucide-git-branch"
+        color="info"
+        variant="soft"
+      />
+      <section
+        v-for="track in tracks"
+        :key="track.title"
+        class="space-y-5"
+      >
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-2xl font-semibold text-highlighted">{{ track.title }}</h2>
-          <UButton :to="track.repo" target="_blank" color="neutral" variant="link" trailing-icon="i-lucide-arrow-up-right">Follow development</UButton>
+          <h2 class="text-2xl font-semibold text-highlighted">
+            {{ track.title }}
+          </h2>
+          <UButton
+            :to="track.repo"
+            target="_blank"
+            color="neutral"
+            variant="link"
+            trailing-icon="i-lucide-arrow-up-right"
+          >
+            Follow development
+          </UButton>
         </div>
         <UPageGrid>
-          <UPageCard v-for="milestone in track.milestones" :key="milestone.title" :title="milestone.title" :description="milestone.description" variant="soft">
-            <template #leading><UBadge :color="milestone.state === 'Available' ? 'success' : milestone.state === 'Next' ? 'info' : 'neutral'" variant="subtle">{{ milestone.state }}</UBadge></template>
+          <UPageCard
+            v-for="milestone in track.milestones"
+            :key="milestone.title"
+            :title="milestone.title"
+            :description="milestone.description"
+            variant="soft"
+          >
+            <template #leading>
+              <UBadge
+                :color="milestone.state === 'Available' ? 'success' : milestone.state === 'Next' ? 'info' : 'neutral'"
+                variant="subtle"
+              >
+                {{ milestone.state }}
+              </UBadge>
+            </template>
           </UPageCard>
         </UPageGrid>
       </section>
-      <UPageCTA title="Help move a milestone forward." description="Start with a repository, read its implementation plan, and propose a focused contribution." :links="[{ label: 'Find a place to contribute', to: '/grants', trailingIcon: 'i-lucide-arrow-right' }]" variant="soft" :ui="{ title: 'text-3xl', container: 'py-10 sm:py-12' }" />
+      <UPageCTA
+        title="Help move a milestone forward."
+        description="Start with a repository, read its implementation plan, and propose a focused contribution."
+        :links="[{ label: 'Find a place to contribute', to: '/grants', trailingIcon: 'i-lucide-arrow-right' }]"
+        variant="soft"
+        :ui="{ title: 'text-3xl', container: 'py-10 sm:py-12' }"
+      />
     </UContainer>
   </div>
 </template>

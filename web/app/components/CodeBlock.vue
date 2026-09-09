@@ -18,10 +18,28 @@ async function copyCode() {
     <div class="flex min-h-12 items-center justify-between gap-3 border-b border-white/10 px-4">
       <span class="font-mono text-xs text-slate-400">{{ filename }}</span>
       <ClientOnly>
-        <UButton v-if="isSupported" :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'" variant="link" color="neutral" size="xs" :aria-label="`Copy ${filename}`" class="text-slate-300 hover:text-white" @click="copyCode">{{ copied ? 'Copied' : 'Copy' }}</UButton>
+        <UButton
+          v-if="isSupported"
+          :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+          variant="link"
+          color="neutral"
+          size="xs"
+          :aria-label="`Copy ${filename}`"
+          class="text-slate-300 hover:text-white"
+          @click="copyCode"
+        >
+          {{ copied ? 'Copied' : 'Copy' }}
+        </UButton>
       </ClientOnly>
-      <span role="status" class="sr-only">{{ copied ? 'Code copied to clipboard' : '' }}</span>
+      <span
+        role="status"
+        class="sr-only"
+      >{{ copied ? 'Code copied to clipboard' : '' }}</span>
     </div>
-    <pre class="overflow-x-auto p-5 text-[12px] leading-7 sm:p-6 sm:text-[13px]" tabindex="0" :aria-label="filename"><code>{{ code }}</code></pre>
+    <pre
+      class="overflow-x-auto p-5 text-[12px] leading-7 sm:p-6 sm:text-[13px]"
+      tabindex="0"
+      :aria-label="filename"
+    ><code>{{ code }}</code></pre>
   </div>
 </template>

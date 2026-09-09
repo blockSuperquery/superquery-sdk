@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#dbe3ef"/></pattern></defs>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  <path d="M62 77a19 19 0 0 1 38 0" fill="none" stroke="#ef4444" stroke-width="9" stroke-linecap="round"/>
+  <path d="M100 77a19 19 0 0 1-38 0m20 3 24 24" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <g font-family="DejaVu Sans, sans-serif">
+    <text x="122" y="91" font-size="29" font-weight="700" fill="#0f172a">SuperQuery</text>
+    <text x="62" y="228" font-size="16" letter-spacing="3" fill="#475569">BUILT IN PUBLIC. BUILT WITH RUST.</text>
+    <text x="58" y="317" font-size="65" font-weight="700" letter-spacing="-3" fill="#0f172a">Blockchain data.</text>
+    <text x="58" y="396" font-size="65" font-weight="700" letter-spacing="-3" fill="#2563eb">Supercharged<tspan fill="#ef4444">.</tspan></text>
+    <text x="62" y="459" font-size="22" fill="#475569">Define. Generate. Query.</text>
+    <text x="62" y="562" font-size="14" letter-spacing="2" fill="#64748b">OPEN SOURCE / EVM FIRST / PRE-ALPHA</text>
+  </g>
+  <rect x="726" y="164" width="412" height="336" rx="16" fill="#07111f"/>
+  <path d="M726 218h412" stroke="#334155"/>
+  <circle cx="751" cy="191" r="4" fill="#f87171"/><circle cx="766" cy="191" r="4" fill="#fbbf24"/><circle cx="781" cy="191" r="4" fill="#34d399"/>
+  <g font-family="DejaVu Sans Mono, monospace" font-size="17" fill="#e2e8f0">
+    <text x="857" y="197" font-size="12" fill="#94a3b8">schema.graphql</text>
+    <text x="754" y="263"><tspan fill="#60a5fa">type</tspan> Transfer <tspan fill="#fdba74">@entity</tspan> {</text>
+    <text x="776" y="300">id: <tspan fill="#93c5fd">ID!</tspan></text>
+    <text x="776" y="337">from: <tspan fill="#93c5fd">String!</tspan></text>
+    <text x="776" y="374">to: <tspan fill="#93c5fd">String!</tspan></text>
+    <text x="776" y="411">value: <tspan fill="#93c5fd">BigInt!</tspan></text>
+    <text x="754" y="448">}</text>
+  </g>
+</svg>
