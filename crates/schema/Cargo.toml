@@ -1,0 +1,23 @@
+[package]
+name = "superquery-schema"
+description = "GraphQL entity schema parsing and the canonical SuperQuery schema IR."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+superquery-types.workspace = true
+graphql-parser.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+camino.workspace = true
+miette.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+insta.workspace = true

@@ -1,24 +1,32 @@
-# Nuxt dev/build outputs
+# Rust
+/target
+**/target
+Cargo.lock.orig
+*.rs.bk
+*.pdb
+
+# SuperQuery build output
+dist/
+**/src/generated/
+
+# Node / Nuxt (web/ has its own .gitignore too)
+node_modules
 .output
-.data
 .nuxt
 .nitro
+.data
 .cache
-dist
 
-# Node dependencies
-node_modules
-
-# Logs
-logs
-*.log
-
-# Misc
+# Editors / OS
 .DS_Store
-.fleet
 .idea
+.fleet
+*.swp
 
-# Local env files
+# Local env
 .env
 .env.*
 !.env.example
+
+# Snapshot test scratch
+*.snap.new

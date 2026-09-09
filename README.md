@@ -1,19 +1,18 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./public/superquery-wordmark-dark.svg">
-  <img alt="SuperQuery" src="./public/superquery-wordmark.svg" width="440">
+  <source media="(prefers-color-scheme: dark)" srcset="./web/public/superquery-wordmark-dark.svg">
+  <img alt="SuperQuery" src="./web/public/superquery-wordmark.svg" width="440">
 </picture>
 
 ### Query at super speed.
 
-##### The Web / Landing Portal
+##### The SDK · CLI · Web Portal
 
 **`RUST-NATIVE` · `SUBQUERY COMPATIBLE`**
 
-The official website and documentation portal for **SuperQuery** — a
-high-integrity indexing framework designed for the most demanding blockchain
-data pipelines. The performance of Rust, the familiarity of SubQuery.
+Everything an indexer developer uses to define, generate, build and validate a
+SuperQuery project — plus the developer portal.
 
 [Live site](https://superquery.vercel.app/) ·
 [SuperQuery core](https://github.com/blockSuperquery)
@@ -22,98 +21,113 @@ data pipelines. The performance of Rust, the familiarity of SubQuery.
 
 ---
 
-## About
+## What this repository is
 
-This repository contains the SuperQuery marketing site and documentation portal,
-built with [Nuxt](https://nuxt.com) and [Nuxt UI](https://ui.nuxt.com). It
-presents the SuperQuery platform:
+`superquery-sdk` is the developer-facing contract of the SuperQuery platform:
+the project manifest, the schema IR, the mapping SDK, the code generator and
+the `superquery` CLI. It is one of exactly three repositories.
 
-- **Native performance** — mappings compile to native Rust code: no interpreter,
-  no GC pauses, predictable tail latency under load.
-- **High integrity** — deterministic indexing with ACID-compliant PostgreSQL
-  storage and reorg-safe historical state.
-- **SubQuery compatible** — reuse your GraphQL schema and project manifest; a
-  migration path, not a rewrite.
-- **Observable** — first-class Prometheus metrics, health endpoints, and
-  structured tracing for production fleets.
+| Repository | Owns |
+|---|---|
+| **superquery-sdk** | manifest, schema IR, mapping ABI, build format, CLI, web |
+| superquery-node | the RPC indexing loop, reorg handling, the entity store |
+| superquery-query | the PostgreSQL-backed GraphQL read API |
 
-For the indexing engine itself, see the SuperQuery core (Rust) repository.
+The SDK is the source of truth for the manifest specification, the schema IR,
+the mapping ABI and the build artifact format. The other two consume them.
 
-## Tech Stack
+## Layout
 
-- [Nuxt](https://nuxt.com) — Vue meta-framework
-- [Nuxt UI](https://ui.nuxt.com) — component library
-- [pnpm](https://pnpm.io) — package manager
-- Deployed on [Vercel](https://vercel.com)
+```text
+crates/
+  types/          scalars, entity values, IDs, block pointers, ABI version
+  manifest/       project.yaml parsing + semantic validation
+  schema/         GraphQL -> canonical IR + deterministic hashing
+  codegen/        IR -> deterministic Rust
+  macros/         #[handler], #[derive(SuperQueryEntity)]
+  chain-api/      the ChainIntegration trait seam
+  chains/evm/     the reference chain integration
+  chains/stellar/ reserved
+  chains/solana/  reserved
+  sdk/            the guest mapping API
+  cli/            the `superquery` binary
 
-## Platform Roadmap & Progress
-
-SuperQuery is built test-first, with every engine milestone gated by
-**differential tests against the reference SubQuery implementation** (schema and
-data asserted byte-identical before a gate passes).
-
-**Delivered**
-
-- [x] Rust workspace + crate topology (engine · store · config · node/query/cli)
-- [x] Node & database configuration ported 1:1
-- [x] Core engine types and trait seams (`BlockchainService`, `ProjectService`, `Store`, `BlockDispatcher`)
-- [x] **Gate 1** — live connectivity verified against real RPC + real Postgres
-- [x] PostgreSQL storage layer: schema-introspection differ + golden-fixture pipeline
-- [x] GraphQL schema → DDL generation — **Gate 2 (schema)** byte-identical to reference
-- [x] Direct-DB model (upsert · delete · get · filtered queries) — **Gate 2 (data)** byte-identical
-- [x] Marketing + docs web portal (this repo)
-
-**In progress**
-
-- [ ] Metadata model, write-behind cache, historical `_block_range`
-- [ ] Enums, embedded JSON types, relations / foreign keys
-
-**Planned**
-
-- [ ] Fetch + dispatch pipeline (**Gate 3**)
-- [ ] Chain integration (Substrate + EVM) — first end-to-end index (**Gate 4 · MVP**)
-- [ ] Proof-of-index merkle cross-verification (**Gate 5**)
-- [ ] Rust / WASM mapping execution (**Gate 6**)
-- [ ] Dictionary, reorg/rewind, multi-worker & multi-chain
-- [ ] GraphQL query service, admin / health endpoints, Prometheus metrics
-
-## Setup
-
-Install dependencies:
-
-```bash
-pnpm install
+templates/evm/    the ERC-20 Transfers starter project
+docs/spec/        the four cross-repo specifications
+web/              the Nuxt developer portal (its own pnpm workspace)
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Quick start
 
 ```bash
+cargo test --workspace
+
+# Check the example project — offline, no RPC, no database.
+cargo run -p superquery-cli -- validate -m templates/evm/project.yaml
+
+# See what codegen would write.
+cargo run -p superquery-cli -- codegen --dry-run -m templates/evm/project.yaml
+```
+
+Building a mapping needs the WASM target:
+
+```bash
+rustup target add wasm32-wasip1
+```
+
+`cargo run -p superquery-cli -- doctor` reports what is missing.
+
+## The CLI
+
+| Command | State |
+|---|---|
+| `superquery validate` | works — manifest, schema, assets, filters |
+| `superquery codegen` | works — entities, metadata, contract bindings |
+| `superquery doctor` | works — toolchain and project checks |
+| `superquery init` | scaffold (Milestone 8) |
+| `superquery build` | scaffold (Milestone 9) |
+| `superquery test` | scaffold (Milestone 10) |
+
+## A mapping
+
+```rust
+use superquery_sdk::prelude::*;
+
+#[handler]
+pub async fn handle_transfer(event: EvmLog<Transfer>) -> Result<()> {
+    TransferEntity {
+        id: event.id(),
+        from: event.params.from.to_string(),
+        to: event.params.to.to_string(),
+        value: BigInt::new(event.params.value.to_string()),
+    }
+    .save()
+    .await
+}
+```
+
+A mapping compiles to WASM. It never opens a socket, a file or a database:
+every effect goes through a host call the node implements.
+
+## Web portal
+
+The Nuxt site is a separate pnpm workspace, excluded from the Cargo workspace.
+
+```bash
+cd web
+pnpm install
 pnpm dev
 ```
 
-## Production
+## Contributing
 
-Build the application for production:
+Read [`.claude/IMPLEMENTATION_PLAN.md`](.claude/IMPLEMENTATION_PLAN.md) for
+milestone status and what to build next, and
+[`.claude/docs/sdk-implementation-guide.md`](.claude/docs/sdk-implementation-guide.md)
+for the design authority.
 
-```bash
-pnpm build
-```
-
-Locally preview the production build:
-
-```bash
-pnpm preview
-```
-
-See the [Nuxt deployment documentation](https://nuxt.com/docs/getting-started/deployment)
-for more information. Production builds deploy automatically to Vercel on push to
-`main`.
-
-## Renovate integration
-
-Dependency updates are managed by [Renovate](https://github.com/apps/renovate/installations/select_target).
+Dependency direction runs strictly downward, from `types` to `cli`. Unfinished
+work returns an error naming its milestone rather than panicking.
 
 ## License
 

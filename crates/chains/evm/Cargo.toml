@@ -1,0 +1,24 @@
+[package]
+name = "superquery-evm"
+description = "EVM developer types, manifest kinds and ABI codegen for SuperQuery."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+superquery-types.workspace = true
+superquery-manifest.workspace = true
+superquery-chain-api.workspace = true
+alloy-json-abi.workspace = true
+alloy-primitives.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+camino.workspace = true
+heck.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
