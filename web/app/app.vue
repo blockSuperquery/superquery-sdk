@@ -21,7 +21,7 @@ useSeoMeta({ ogType: 'website', ogSiteName: 'SuperQuery', twitterCard: 'summary_
       href="#main-content"
       class="skip-link"
     >Skip to content</a>
-    <LazySiteHeader hydrate-on-interaction />
+    <SiteHeader />
     <UMain
       id="main-content"
       tabindex="-1"

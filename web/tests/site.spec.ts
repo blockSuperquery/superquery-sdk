@@ -15,6 +15,9 @@ for (const route of routes) {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByRole('button', { name: /Switch to dark mode/ })).toBeEnabled()
     await page.evaluate(() => document.fonts.ready)
+    if (route === '/examples') {
+      await expect(page.getByRole('tabpanel').filter({ visible: true })).toContainText('git clone')
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     expect(await page.locator('body').innerText()).not.toContain('\u2014')
     const links = await page.locator('a[href]').evaluateAll(elements => elements.map(element => element.getAttribute('href')).filter((href): href is string => !!href))
@@ -57,6 +60,7 @@ test('code tabs respond to keyboard and copy the selected example', async ({ pag
 test('FAQ works with the keyboard and theme survives navigation', async ({ page }) => {
   await page.goto('/')
   const question = page.getByRole('button', { name: 'What can I use today?' })
+  await question.scrollIntoViewIfNeeded()
   await question.focus()
   await page.keyboard.press('Enter')
   await expect(question).toHaveAttribute('aria-expanded', 'true')

@@ -23,9 +23,9 @@
 }
 
 :root {
-  --ui-primary: var(--color-blue-600);
+  --ui-primary: var(--color-blue-700);
   --ui-info: var(--color-blue-700);
-  --ui-success: var(--color-emerald-700);
+  --ui-success: var(--color-emerald-800);
   --ui-warning: var(--color-amber-800);
   --ui-error: var(--color-red-700);
   --ui-text-muted: var(--color-slate-600);

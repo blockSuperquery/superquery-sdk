@@ -60,6 +60,8 @@ excluded from indexing and the sitemap independently.
 - Bundle Latin variable fonts and only the icons used by the site.
 - Keep font and icon requests local.
 - Prefetch links on interaction instead of fetching all visible destinations.
+- Keep navigation immediately interactive and hydrate below-the-fold content on visibility.
+- Generate Nuxt UI themes only for components the site uses.
 - Use CSS and an HTML code illustration for the hero.
 - Serve a checked-in 1200 × 630 social card without a runtime image renderer.
 - Respect reduced motion and use Nuxt UI's accessible navigation and controls.
