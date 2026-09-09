@@ -2,33 +2,54 @@ name: ci
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
   rust:
     name: rust
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
 
       - name: Install toolchain
-        run: rustup component add rustfmt clippy
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+          rustup default stable
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Format
         run: cargo fmt --all --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
 
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --locked --workspace
 
       - name: Validate the example project
-        run: cargo run -p superquery-cli -- validate -m templates/evm/project.yaml
+        run: cargo run --locked -p superquery-cli -- validate -m templates/evm/project.yaml
+
+      - name: Preview example code generation
+        run: cargo run --locked -p superquery-cli -- codegen --dry-run -m templates/evm/project.yaml
 
   web:
     name: web
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: web
@@ -36,18 +57,55 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: web/package.json
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version-file: web/.node-version
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm run lint
 
       - name: Typecheck
         run: pnpm run typecheck
+
+      - name: Generate production site
+        run: pnpm run generate
+
+      - name: Check static output
+        run: pnpm run check:output
+
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser and accessibility checks
+        run: pnpm run test:e2e
+
+      - name: Performance budget
+        run: pnpm run test:perf
+
+      - name: Save browser and performance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-check-reports
+          path: |
+            web/playwright-report/
+            web/test-results/
+            web/.lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Save deployable static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-site
+          path: web/.output/public/
+          include-hidden-files: true
+          retention-days: 7

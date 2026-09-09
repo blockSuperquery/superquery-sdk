@@ -1,81 +1,51 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://superquery.vercel.app'
+
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui',
-    '@nuxtjs/seo'
-  ],
-
-  devtools: {
-    enabled: true
-  },
-
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/seo'],
+  devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
-
-  routeRules: {
-    '/': { prerender: true }
-  },
-
   compatibilityDate: '2026-06-30',
-
   site: {
-    url: 'https://superquery.io',
+    url: siteUrl,
     name: 'SuperQuery',
-    description: 'A high-integrity indexing framework designed for the most demanding blockchain data pipelines. Performance of Rust, familiarity of SubQuery.',
+    description: 'An open-source Rust toolkit for defining, indexing, and querying blockchain data.',
     defaultLocale: 'en',
-    indexable: true
+    indexable: process.env.NUXT_SITE_INDEXABLE !== 'false'
   },
-
-  sitemap: {
-    exclude: ['/portal/**']
+  routeRules: {
+    '/': { prerender: true },
+    '/sdk': { prerender: true },
+    '/docs': { prerender: true },
+    '/examples': { prerender: true },
+    '/roadmap': { prerender: true },
+    '/status': { prerender: true },
+    '/changelog': { prerender: true },
+    '/grants': { prerender: true },
+    '/portal': { prerender: true, robots: false }
   },
-
-  robots: {
-    disallow: ['/portal']
+  nitro: {
+    compressPublicAssets: true,
+    prerender: { crawlLinks: true, failOnError: true }
   },
-
-  ogImage: {
-    fonts: ['Space+Grotesk:700', 'Inter:400']
+  experimental: {
+    defaults: { nuxtLink: { prefetchOn: { interaction: true } } }
   },
-
+  sitemap: { exclude: ['/portal'] },
+  robots: { disallow: ['/portal'] },
+  // A checked-in social card avoids a native image renderer during deployments.
+  ogImage: { enabled: false },
   schemaOrg: {
     identity: {
       type: 'Organization',
       name: 'SuperQuery',
-      url: 'https://superquery.io',
-      logo: 'https://superquery.io/superquery-mark.svg',
-      sameAs: [
-        'https://github.com/superquery/superquery-sdk',
-        'https://discord.gg/superquery'
-      ]
+      url: siteUrl,
+      logo: `${siteUrl}/superquery-mark.svg`,
+      sameAs: ['https://github.com/blockSuperquery']
     }
   },
-
-  ui: {
-    fonts: true,
-    colorMode: true
-  },
-
-  colorMode: {
-    preference: 'light',
-    fallback: 'light',
-    classSuffix: ''
-  },
-
-  fonts: {
-    families: [
-      { name: 'Inter', provider: 'google', weights: [400, 500, 600, 700] },
-      { name: 'Space Grotesk', provider: 'google', weights: [500, 600, 700] },
-      { name: 'JetBrains Mono', provider: 'google', weights: [400, 500, 600] }
-    ]
-  },
-
+  ui: { fonts: false, colorMode: true },
+  colorMode: { preference: 'light', fallback: 'light', classSuffix: '' },
   eslint: {
-    config: {
-      stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    }
+    config: { stylistic: { commaDangle: 'never', braceStyle: '1tbs' } }
   }
 })

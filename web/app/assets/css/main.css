@@ -1,145 +1,30 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "@fontsource-variable/inter/latin.css";
+@import "@fontsource-variable/space-grotesk/latin.css";
 
 @theme static {
-  /* Fonts (loaded/self-hosted by @nuxt/ui/fonts via @theme detection) */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-
-  /* Brand primary = SuperQuery blue #2563EB (Tailwind blue-600). Full 50-950 palette. */
-  --color-primary-50: #EFF6FF;
-  --color-primary-100: #DBEAFE;
-  --color-primary-200: #BFDBFE;
-  --color-primary-300: #93C5FD;
-  --color-primary-400: #60A5FA;
-  --color-primary-500: #3B82F6;
-  --color-primary-600: #2563EB;
-  --color-primary-700: #1D4ED8;
-  --color-primary-800: #1E40AF;
-  --color-primary-900: #1E3A8A;
-  --color-primary-950: #172554;
-
-  /* Neutral = Deep Ink scale (#07111F darkest, Cool Border #E2E8F0, Cloud Gray #F7F9FB) */
-  --color-neutral-50:  #F7F9FB;
-  --color-neutral-100: #F2F4F6;
-  --color-neutral-200: #E2E8F0;
-  --color-neutral-300: #CBD5E1;
-  --color-neutral-400: #94A3B8;
-  --color-neutral-500: #64748B;
-  --color-neutral-600: #434655;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #191C1E;
-  --color-neutral-900: #0F172A;
-  --color-neutral-950: #07111F;
-
-  /* Absolute brand tokens (do NOT switch with theme — used for intentionally-dark panels) */
-  --color-deep-ink:    #07111F;
-  --color-signal-red:  #EF4444;
-  --color-rust-orange: #C2410C;
-  --color-soft-blue:   #DBEAFE;
-  --color-cool-border: #E2E8F0;
-  --color-cloud-gray:  #F7F9FB;
-
-  /* Border radius: system default is 0.25rem (Soft) */
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-
-  /* Spacing rhythm */
-  --spacing-gutter:  24px;
-  --spacing-section: 100px;
-  --spacing-unit-xs: 4px;
-  --spacing-unit-sm: 8px;
-  --spacing-unit-md: 16px;
-  --spacing-unit-lg: 32px;
-  --spacing-unit-xl: 64px;
-
-  /* Container width per design system: 1200px */
-  --container-content: 1200px;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --color-ink: #07111f;
 }
 
-/* -------------------------------------------------------------------------
-   Theme-switchable semantic tokens.
-   The underlying --sq-* vars flip via useColorMode() adding `.dark` to <html>.
-   Exposing them as --color-* in @theme gives us proper Tailwind utilities:
-     bg-page, bg-surface, bg-surface-muted, text-heading, text-fg, text-fg-muted,
-     border-subtle — all with opacity modifier support (e.g. bg-page/85).
-   Brand tokens above stay absolute so intentionally-dark panels remain dark
-   in both modes (roadmap, terminal cards, dark CTA panel).
-   ------------------------------------------------------------------------- */
 :root {
-  --sq-page:            #F7F9FB;                    /* cloud-gray */
-  --sq-surface:         #FFFFFF;
-  --sq-surface-muted:   #F2F4F6;
-  --sq-heading:         #07111F;                    /* deep-ink */
-  --sq-fg:              #191C1E;
-  --sq-fg-muted:        #434655;
-  --sq-border-subtle:   #E2E8F0;                    /* cool-border */
-  --sq-grid-dot:        #E2E8F0;
+  --ui-primary: var(--color-blue-600);
+  --ui-container: 76rem;
 }
-
-.dark {
-  --sq-page:            #07111F;                    /* deep-ink */
-  --sq-surface:         #0F172A;                    /* neutral-900 */
-  --sq-surface-muted:   #191C1E;                    /* neutral-800 */
-  --sq-heading:         #F7F9FB;                    /* cloud-gray */
-  --sq-fg:              #E2E8F0;
-  --sq-fg-muted:        #94A3B8;
-  --sq-border-subtle:   rgba(255, 255, 255, 0.08);
-  --sq-grid-dot:        rgba(255, 255, 255, 0.06);
+.dark { --ui-primary: var(--color-blue-400); }
+body { -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-display); }
+::selection { background: #bfdbfe; color: #172554; }
+[id] { scroll-margin-top: 6rem; }
+.skip-link { position: fixed; top: -6rem; left: 1rem; z-index: 100; padding: 0.75rem 1rem; background: var(--ui-bg); color: var(--ui-text-highlighted); border: 2px solid var(--ui-primary); border-radius: 0.5rem; }
+.skip-link:focus { top: 0.5rem; }
+.dot-grid { background-image: radial-gradient(var(--ui-border-accented) 1px, transparent 1px); background-size: 24px 24px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.page-copy { color: var(--ui-text-muted); line-height: 1.8; }
+.page-copy p + p { margin-top: 1rem; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-
-@theme inline {
-  --color-page:           var(--sq-page);
-  --color-surface:        var(--sq-surface);
-  --color-surface-muted:  var(--sq-surface-muted);
-  --color-heading:        var(--sq-heading);
-  --color-fg:             var(--sq-fg);
-  --color-fg-muted:       var(--sq-fg-muted);
-  --color-subtle:         var(--sq-border-subtle);
-}
-
-/* Design system utilities */
-@utility container-content {
-  max-width: var(--container-content);
-  margin-inline: auto;
-  padding-inline: var(--spacing-gutter);
-}
-
-@utility eyebrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Body defaults per design system — switches with theme */
-body {
-  background-color: var(--sq-page);
-  color: var(--sq-fg);
-  font-family: var(--font-sans);
-}
-
-/* Space Grotesk for headings globally — heading color switches with theme */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  color: var(--sq-heading);
-  letter-spacing: -0.01em;
-}
-
-/* Isometric dot grid used in hero backgrounds — grid dot fades with theme */
-.isometric-grid {
-  background-image: radial-gradient(var(--sq-grid-dot) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: radial-gradient(circle at center, black, transparent 80%);
-}
-
-/* Rust-style syntax highlighting inside code blocks (always on dark panels) */
-.code-syntax-rust .keyword { color: var(--color-rust-orange); }
-.code-syntax-rust .type    { color: var(--color-primary-400); }
-.code-syntax-rust .string  { color: #34D399; }
-.code-syntax-rust .comment { color: #64748B; }
