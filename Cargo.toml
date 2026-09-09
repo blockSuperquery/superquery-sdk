@@ -13,7 +13,7 @@ members = [
     "crates/sdk",
     "crates/cli",
 ]
-# `web/` is a pnpm/Nuxt workspace and must never be pulled into the Cargo graph.
+# `web/` is a Bun/Nuxt workspace and must never be pulled into the Cargo graph.
 exclude = ["web", "templates", "examples"]
 
 [workspace.package]

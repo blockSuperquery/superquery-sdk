@@ -22,7 +22,7 @@ cargo fmt --all                         # 100-col, edition 2024
 cargo run -p superquery-cli -- validate -m templates/evm/project.yaml
 cargo run -p superquery-cli -- codegen --dry-run -m templates/evm/project.yaml
 
-cd web && pnpm install && pnpm dev      # the portal
+cd web && bun install && bun run dev   # the portal
 ```
 
 ## Layering

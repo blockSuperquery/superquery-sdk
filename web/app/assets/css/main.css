@@ -1,7 +1,19 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
-@import "@fontsource-variable/inter/latin.css";
-@import "@fontsource-variable/space-grotesk/latin.css";
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk Variable";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2") format("woff2");
+}
 
 @theme static {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
@@ -12,9 +24,21 @@
 
 :root {
   --ui-primary: var(--color-blue-600);
+  --ui-info: var(--color-blue-700);
+  --ui-success: var(--color-emerald-700);
+  --ui-warning: var(--color-amber-800);
+  --ui-error: var(--color-red-700);
+  --ui-text-muted: var(--color-slate-600);
   --ui-container: 76rem;
 }
-.dark { --ui-primary: var(--color-blue-400); }
+.dark {
+  --ui-primary: var(--color-blue-400);
+  --ui-info: var(--color-blue-300);
+  --ui-success: var(--color-emerald-300);
+  --ui-warning: var(--color-amber-300);
+  --ui-error: var(--color-red-300);
+  --ui-text-muted: var(--color-slate-400);
+}
 body { -webkit-font-smoothing: antialiased; }
 h1, h2, h3, h4 { font-family: var(--font-display); }
 ::selection { background: #bfdbfe; color: #172554; }

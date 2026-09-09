@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     indexable: process.env.NUXT_SITE_INDEXABLE !== 'false'
   },
   colorMode: { preference: 'light', fallback: 'light', classSuffix: '' },
-  ui: { fonts: false, colorMode: true },
+  ui: { fonts: false, colorMode: true, experimental: { componentDetection: true } },
   routeRules: {
     '/': { prerender: true },
     '/sdk': { prerender: true },
@@ -34,6 +34,15 @@ export default defineNuxtConfig({
   },
   eslint: {
     config: { stylistic: { commaDangle: 'never', braceStyle: '1tbs' } }
+  },
+  icon: {
+    provider: 'none',
+    fallbackToApi: false,
+    clientBundle: {
+      scan: { globInclude: ['app/**/*.{vue,ts}'] },
+      // Nuxt UI uses these dynamically in navigation, themes, tabs, and tables.
+      icons: ['lucide:menu', 'lucide:x', 'lucide:sun', 'lucide:moon', 'lucide:chevron-down', 'lucide:chevron-up', 'lucide:chevron-left', 'lucide:chevron-right', 'lucide:arrow-up-right', 'lucide:external-link', 'lucide:check', 'lucide:copy', 'lucide:loader-circle', 'lucide:arrow-up-down', 'lucide:arrow-up', 'lucide:arrow-down']
+    }
   },
   // A checked-in social card avoids a native image renderer during deployments.
   ogImage: { enabled: false },

@@ -48,6 +48,7 @@ const tabs = [
         </div>
       </UPageCard>
       <UTabs
+        default-value="quickstart"
         :items="tabs"
         :unmount-on-hide="false"
         aria-label="Example files"

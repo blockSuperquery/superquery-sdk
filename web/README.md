@@ -1,120 +1,92 @@
-<div align="center">
+# SuperQuery web
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./public/superquery-wordmark-dark.svg">
-  <img alt="SuperQuery" src="./public/superquery-wordmark.svg" width="440">
-</picture>
+The public SuperQuery site, built with Nuxt 4, Nuxt UI 4, and Tailwind CSS 4.
+It lives in `web/`, outside the Rust workspace.
 
-### Query at super speed.
+## Development
 
-##### The Web / Landing Portal
-
-**`RUST-NATIVE` · `SUBQUERY COMPATIBLE`**
-
-The official website and documentation portal for **SuperQuery** — a
-high-integrity indexing framework designed for the most demanding blockchain
-data pipelines. The performance of Rust, the familiarity of SubQuery.
-
-[Live site](https://superquery.vercel.app/) ·
-[SuperQuery core](https://github.com/blockSuperquery)
-
-</div>
-
----
-
-## About
-
-This repository contains the SuperQuery marketing site and documentation portal,
-built with [Nuxt](https://nuxt.com) and [Nuxt UI](https://ui.nuxt.com). It
-presents the SuperQuery platform:
-
-- **Native performance** — mappings compile to native Rust code: no interpreter,
-  no GC pauses, predictable tail latency under load.
-- **High integrity** — deterministic indexing with ACID-compliant PostgreSQL
-  storage and reorg-safe historical state.
-- **SubQuery compatible** — reuse your GraphQL schema and project manifest; a
-  migration path, not a rewrite.
-- **Observable** — first-class Prometheus metrics, health endpoints, and
-  structured tracing for production fleets.
-
-For the indexing engine itself, see the SuperQuery core (Rust) repository.
-
-## Tech Stack
-
-- [Nuxt](https://nuxt.com) — Vue meta-framework
-- [Nuxt UI](https://ui.nuxt.com) — component library
-- [pnpm](https://pnpm.io) — package manager
-- Deployed on [Vercel](https://vercel.com)
-
-## Platform Roadmap & Progress
-
-SuperQuery is built test-first, with every engine milestone gated by
-**differential tests against the reference SubQuery implementation** (schema and
-data asserted byte-identical before a gate passes).
-
-**Delivered**
-
-- [x] Rust workspace + crate topology (engine · store · config · node/query/cli)
-- [x] Node & database configuration ported 1:1
-- [x] Core engine types and trait seams (`BlockchainService`, `ProjectService`, `Store`, `BlockDispatcher`)
-- [x] **Gate 1** — live connectivity verified against real RPC + real Postgres
-- [x] PostgreSQL storage layer: schema-introspection differ + golden-fixture pipeline
-- [x] GraphQL schema → DDL generation — **Gate 2 (schema)** byte-identical to reference
-- [x] Direct-DB model (upsert · delete · get · filtered queries) — **Gate 2 (data)** byte-identical
-- [x] Marketing + docs web portal (this repo)
-
-**In progress**
-
-- [ ] Metadata model, write-behind cache, historical `_block_range`
-- [ ] Enums, embedded JSON types, relations / foreign keys
-
-**Planned**
-
-- [ ] Fetch + dispatch pipeline (**Gate 3**)
-- [ ] Chain integration (Substrate + EVM) — first end-to-end index (**Gate 4 · MVP**)
-- [ ] Proof-of-index merkle cross-verification (**Gate 5**)
-- [ ] Rust / WASM mapping execution (**Gate 6**)
-- [ ] Dictionary, reorg/rewind, multi-worker & multi-chain
-- [ ] GraphQL query service, admin / health endpoints, Prometheus metrics
-
-## Setup
-
-Install dependencies:
+Use Bun 1.3.14 (see `.bun-version`) for dependencies and scripts. Node 24
+(see `.node-version`) is also needed by Nuxt and the Lighthouse tooling.
 
 ```bash
-pnpm install
+bun install --frozen-lockfile
+bun run dev
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Production and verification
 
 ```bash
-pnpm dev
+bun run lint
+bun run typecheck
+bun run generate
+bun run check:output
+bunx --no-install playwright install --with-deps chromium
+bun run test:e2e
+bun run test:perf
 ```
 
-## Production
+`generate` prerenders all nine routes into `.output/public/`.
+`preview:static` serves this output on port 4173 with gzip when available.
+`build` and `preview` remain available for Nuxt's server deployment workflow.
 
-Build the application for production:
+The browser suite checks desktop and mobile layouts, accessible names and contrast,
+navigation, keyboard controls, copy buttons, dark mode, documentation anchors, and
+404 responses. Lighthouse checks the homepage, docs, and examples with three mobile
+runs each. Reports stay local under `playwright-report/` and `.lighthouseci/`.
 
-```bash
-pnpm build
-```
+To use an existing browser, set `CHROME_PATH` to its executable path.
+Close the static preview before running Lighthouse, which starts its own server.
 
-Locally preview the production build:
+## CI and deployment
 
-```bash
-pnpm preview
-```
+GitHub Actions reads `web/.bun-version` and installs from `web/bun.lock` with
+`--frozen-lockfile`. Rust and web checks run separately. Web CI generates the site,
+checks metadata and output budgets, runs browser and Lighthouse checks, and saves
+the static output and reports as artifacts.
 
-See the [Nuxt deployment documentation](https://nuxt.com/docs/getting-started/deployment)
-for more information. Production builds deploy automatically to Vercel on push to
-`main`.
+Vercel project settings are managed separately. The repository's web root is
+`web/`; this change does not modify the Vercel project or deployment settings.
+Use Bun locally so local builds and CI use the same lockfile.
 
-## Renovate integration
+Copy `.env.example` for configuration. Set `NUXT_PUBLIC_SITE_URL` to the
+production origin before building to keep canonical URLs, the sitemap, and
+structured data aligned. The default is `https://superquery.vercel.app`.
+Set `NUXT_SITE_INDEXABLE=false` for non-production previews. The portal is
+excluded from indexing and the sitemap independently.
 
-Dependency updates are managed by [Renovate](https://github.com/apps/renovate/installations/select_target).
+## Performance choices
 
-## License
+- Prerender every public route and compress the output.
+- Bundle Latin variable fonts and only the icons used by the site.
+- Keep font and icon requests local.
+- Prefetch links on interaction instead of fetching all visible destinations.
+- Use CSS and an HTML code illustration for the hero.
+- Serve a checked-in 1200 × 630 social card without a runtime image renderer.
+- Respect reduced motion and use Nuxt UI's accessible navigation and controls.
 
-See [LICENSE](LICENSE).
+## Content and project scope
+
+`app/utils/project.ts` contains repository links and reusable examples.
+The site reflects the implementation, not assumed production capabilities:
+
+| Repository | Responsibility | Current scope |
+| --- | --- | --- |
+| [SDK](https://github.com/blockSuperquery/superquery-sdk) | Developer contract and tooling | Validation, schema parsing, codegen, EVM ABI bindings, doctor |
+| [Node](https://github.com/blockSuperquery/superquery-node) | Ingestion and indexed-state writes | Pre-alpha components; full pipeline still being connected |
+| [Query](https://github.com/blockSuperquery/superquery-query) | PostgreSQL-backed GraphQL reads | Filtering, sorting, pagination, relations, health and query limits |
+
+Source review: 9 September 2026. SDK init/build/test, full mapping execution,
+additional chain integrations, and managed hosting must not be presented as
+available. Do not add invented benchmarks, adoption numbers, live health data,
+funding offers, or nonfunctional signup forms. Site copy uses no em dashes.
+
+For shared contracts, see [the specifications](../docs/spec/README.md).
+For developer milestones, see [the implementation plan](../.claude/IMPLEMENTATION_PLAN.md).
+
+## References
+
+- [Nuxt rendering modes](https://nuxt.com/docs/4.x/guide/concepts/rendering)
+- [Nuxt performance](https://nuxt.com/docs/4.x/guide/best-practices/performance)
+- [Nuxt UI Header](https://ui.nuxt.com/docs/components/header)
+- [Nuxt UI components](https://ui.nuxt.com/docs/components)
+- [Lighthouse scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)

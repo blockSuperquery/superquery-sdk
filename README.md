@@ -54,7 +54,7 @@ crates/
 
 templates/evm/    the ERC-20 Transfers starter project
 docs/spec/        the four cross-repo specifications
-web/              the Nuxt developer portal (its own pnpm workspace)
+web/              the Nuxt developer portal (its own Bun workspace)
 ```
 
 ## Quick start
@@ -111,12 +111,12 @@ every effect goes through a host call the node implements.
 
 ## Web portal
 
-The Nuxt site is a separate pnpm workspace, excluded from the Cargo workspace.
+The Nuxt site is a separate Bun workspace, excluded from the Cargo workspace.
 
 ```bash
 cd web
-pnpm install
-pnpm dev
+bun install --frozen-lockfile
+bun run dev
 ```
 
 ## Contributing

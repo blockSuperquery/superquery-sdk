@@ -56,39 +56,37 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: web/package.json
-
       - uses: actions/setup-node@v6
         with:
           node-version-file: web/.node-version
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: web/.bun-version
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint
+        run: bun run lint
 
       - name: Typecheck
-        run: pnpm run typecheck
+        run: bun run typecheck
 
       - name: Generate production site
-        run: pnpm run generate
+        run: bun run generate
 
       - name: Check static output
-        run: pnpm run check:output
+        run: bun run check:output
 
       - name: Install browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: bunx --no-install playwright install --with-deps chromium
 
       - name: Browser and accessibility checks
-        run: pnpm run test:e2e
+        run: bun run test:e2e
 
       - name: Performance budget
-        run: pnpm run test:perf
+        run: bun run test:perf
 
       - name: Save browser and performance reports
         if: always()
