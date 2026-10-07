@@ -41,6 +41,10 @@ pub mod testing;
 pub use error::{Error, Result};
 pub use superquery_types::{MAPPING_ABI_VERSION, MappingAbiVersion};
 
+/// The shared value model. Generated code names these paths, so they are part
+/// of the SDK's public surface.
+pub use superquery_types as types;
+
 #[cfg(feature = "evm")]
 pub use alloy_sol_types::sol;
 
@@ -49,7 +53,9 @@ pub use alloy_sol_types::sol;
 #[doc(hidden)]
 pub mod __private {
     pub use crate::error::{Error, Result};
-    pub use superquery_types::{Entity as UntypedEntity, EntityId, FromValue, ToValue, Value};
+    pub use superquery_types::{
+        Entity as UntypedEntity, EntityId, FromValue, FromValueError, ToValue, Value,
+    };
 
     /// Build an entity's id, naming the entity if it is empty.
     pub fn entity_id(entity: &str, id: &str) -> Result<EntityId> {

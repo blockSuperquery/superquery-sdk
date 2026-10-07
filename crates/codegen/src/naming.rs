@@ -15,6 +15,9 @@ const RESERVED: &[&str] = &[
     "unsafe", "use", "where", "while", "yield",
 ];
 
+/// Keywords that cannot be raw identifiers either; these get a trailing `_`.
+const NOT_RAW: &[&str] = &["crate", "self", "Self", "super"];
+
 /// The Rust struct name for an entity, e.g. `Transfer` -> `Transfer`.
 pub fn entity_struct(entity: &str) -> String {
     entity.to_upper_camel_case()
@@ -26,11 +29,32 @@ pub fn entity_struct(entity: &str) -> String {
 /// the generated field still reads like the schema field.
 pub fn field_ident(field: &str) -> String {
     let snake = field.to_snake_case();
-    if RESERVED.contains(&snake.as_str()) {
+    if NOT_RAW.contains(&snake.as_str()) {
+        format!("{snake}_")
+    } else if RESERVED.contains(&snake.as_str()) {
         format!("r#{snake}")
     } else {
         snake
     }
+}
+
+/// The Rust variant name for a schema enum value, e.g. `BUY` -> `Buy`.
+pub fn enum_variant(value: &str) -> String {
+    // Only `Self` can collide: every other keyword is lowercase.
+    let camel = value.to_lowercase().to_upper_camel_case();
+    if NOT_RAW.contains(&camel.as_str()) {
+        format!("{camel}_")
+    } else {
+        camel
+    }
+}
+
+/// The schema name a generated field would map back to without help.
+///
+/// When this differs from the schema's own spelling, codegen must emit
+/// `#[superquery(rename = "...")]` so the derive writes the right key.
+pub fn implied_schema_name(rust_ident: &str) -> &str {
+    rust_ident.strip_prefix("r#").unwrap_or(rust_ident)
 }
 
 /// The module name for an entity's generated code.
@@ -55,8 +79,22 @@ mod tests {
     }
 
     #[test]
+    fn enum_values_become_camel_case_variants() {
+        assert_eq!(enum_variant("BUY"), "Buy");
+        assert_eq!(enum_variant("LIMIT_ORDER"), "LimitOrder");
+        assert_eq!(enum_variant("self"), "Self_");
+    }
+
+    #[test]
     fn reserved_words_become_raw_identifiers() {
         assert_eq!(field_ident("type"), "r#type");
         assert_eq!(field_ident("match"), "r#match");
+    }
+
+    #[test]
+    fn keywords_that_cannot_be_raw_get_a_trailing_underscore() {
+        assert_eq!(field_ident("self"), "self_");
+        assert_eq!(field_ident("super"), "super_");
+        assert_eq!(field_ident("crate"), "crate_");
     }
 }
