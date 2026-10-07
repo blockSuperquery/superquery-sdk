@@ -1,0 +1,5 @@
+---
+source: crates/schema/tests/ir.rs
+expression: schema_hash(&ir)
+---
+8a518cc0fcbd366647c31f09d84fda1ffcab7228c6d2ef59ba8f4e017e51b8d1
