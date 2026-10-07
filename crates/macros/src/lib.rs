@@ -12,8 +12,10 @@
 //! and recognise their own code. Macro magic that makes a failing mapping
 //! impossible to debug is worse than a little boilerplate.
 //!
-//! Scaffold for Milestone 7: today both macros pass the item through
-//! unchanged so projects compile end-to-end while the ABI is still settling.
+//! Each macro is a thin `proc_macro` shim over a `proc_macro2` expansion in
+//! its own module, so the expansion is unit-testable without a compiler.
+
+mod entity;
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -36,14 +38,23 @@ pub fn handler(_attr: TokenStream, item: TokenStream) -> TokenStream {
     quote!(#function).into()
 }
 
-/// Implement the store traits for a generated entity struct.
+/// Implement `superquery_sdk::store::Entity` for a generated entity struct.
 ///
-/// Milestone 7 adds the `Entity` impl: `NAME`, `id()`, and the
-/// [`superquery_types::Value`] lowering for each field.
+/// ```ignore
+/// #[derive(SuperQueryEntity)]
+/// #[superquery(entity = "Transfer")]          // defaults to the struct name
+/// pub struct Transfer {
+///     pub id: String,                          // required: the primary key
+///     #[superquery(rename = "blockNumber")]    // the schema's field name
+///     pub block_number: BigInt,
+/// }
+/// ```
+///
+/// Every field type must implement `ToValue` and `FromValue`.
 #[proc_macro_derive(SuperQueryEntity, attributes(superquery))]
 pub fn derive_entity(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
-    let _name = &input.ident;
-    // TODO(milestone-7): generate `impl superquery_sdk::store::Entity`.
-    TokenStream::new()
+    entity::expand(input)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }

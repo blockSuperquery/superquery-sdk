@@ -15,8 +15,9 @@ pub trait Entity: Sized {
     /// The entity's schema name, e.g. `Transfer`.
     const NAME: &'static str;
 
-    /// This entity's primary key.
-    fn id(&self) -> EntityId;
+    /// This entity's primary key. Fails if the `id` field is empty, which the
+    /// store cannot address.
+    fn id(&self) -> Result<EntityId>;
 
     /// Lower to the untyped form that crosses the mapping ABI.
     fn to_untyped(&self) -> UntypedEntity;
@@ -25,8 +26,8 @@ pub trait Entity: Sized {
     fn from_untyped(entity: &UntypedEntity) -> Result<Self>;
 
     /// This entity's store address.
-    fn key(&self) -> EntityKey {
-        EntityKey::new(Self::NAME, self.id())
+    fn key(&self) -> Result<EntityKey> {
+        Ok(EntityKey::new(Self::NAME, self.id()?))
     }
 }
 
@@ -45,11 +46,11 @@ pub trait Store {
 
 impl<T: Entity> Store for T {
     async fn save(&self) -> Result {
-        crate::host::store::set(&self.key(), &self.to_untyped())
+        crate::host::store::set(&self.key()?, &self.to_untyped())
     }
 
     async fn remove(&self) -> Result {
-        crate::host::store::remove(&self.key())
+        crate::host::store::remove(&self.key()?)
     }
 }
 

@@ -44,6 +44,23 @@ pub use superquery_types::{MAPPING_ABI_VERSION, MappingAbiVersion};
 #[cfg(feature = "evm")]
 pub use alloy_sol_types::sol;
 
+/// Paths the macros expand to. Not a public API: names here change whenever
+/// the macros need them to.
+#[doc(hidden)]
+pub mod __private {
+    pub use crate::error::{Error, Result};
+    pub use superquery_types::{Entity as UntypedEntity, EntityId, FromValue, ToValue, Value};
+
+    /// Build an entity's id, naming the entity if it is empty.
+    pub fn entity_id(entity: &str, id: &str) -> Result<EntityId> {
+        EntityId::new(id).map_err(|err| Error::Entity {
+            operation: "encode",
+            entity: entity.to_owned(),
+            message: err.to_string(),
+        })
+    }
+}
+
 /// What a mapping's `use superquery_sdk::prelude::*;` brings in.
 pub mod prelude {
     pub use crate::error::{Error, Result};

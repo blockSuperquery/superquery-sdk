@@ -175,8 +175,8 @@ mod tests {
     impl Entity for Transfer {
         const NAME: &'static str = "Transfer";
 
-        fn id(&self) -> EntityId {
-            EntityId::new(self.id.clone()).unwrap()
+        fn id(&self) -> Result<EntityId> {
+            crate::__private::entity_id(Self::NAME, &self.id)
         }
 
         fn to_untyped(&self) -> UntypedEntity {
