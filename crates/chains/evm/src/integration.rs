@@ -38,23 +38,26 @@ impl ChainIntegration for EvmIntegration {
             {
                 out.error(
                     at(".kind"),
-                    format!(
-                        "unknown EVM datasource kind `{}`; expected `evm/Runtime`",
-                        ds.kind
-                    ),
-                );
+                    format!("unknown EVM datasource kind `{}`", ds.kind),
+                )
+                .with_help("EVM datasources are `evm/Runtime`");
             }
 
             match ds.options.get_str("address") {
-                Some(address) if address.parse::<Address>().is_err() => out.error(
-                    at(".options.address"),
-                    format!("`{address}` is not a valid EVM address"),
-                ),
-                None => out.warn(
-                    at(".options.address"),
-                    "no address set — this datasource matches every contract on the chain"
-                        .to_owned(),
-                ),
+                Some(address) if address.parse::<Address>().is_err() => {
+                    out.error(
+                        at(".options.address"),
+                        format!("`{address}` is not a valid EVM address"),
+                    )
+                    .with_help("write a 20-byte hex address, e.g. \"0xA0b8...eB48\"");
+                }
+                None => {
+                    out.warn(
+                        at(".options.address"),
+                        "no address set — this datasource matches every contract on the chain",
+                    )
+                    .with_help("set `options.address` unless indexing every emitter is intended");
+                }
                 Some(_) => {}
             }
 
@@ -67,16 +70,16 @@ impl ChainIntegration for EvmIntegration {
                 {
                     out.error(
                         at_h(".kind"),
-                        format!(
-                            "unknown EVM handler kind `{}`; expected one of {}",
-                            handler.kind,
-                            kinds::HANDLER_KINDS
-                                .iter()
-                                .map(|k| k.kind)
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        ),
-                    );
+                        format!("unknown EVM handler kind `{}`", handler.kind),
+                    )
+                    .with_help(format!(
+                        "expected one of {}",
+                        kinds::HANDLER_KINDS
+                            .iter()
+                            .map(|k| k.kind)
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    ));
                     continue;
                 }
 
@@ -85,10 +88,10 @@ impl ChainIntegration for EvmIntegration {
                 {
                     out.error(
                         at_h(".filter.event"),
-                        format!(
-                            "`{}` is not an event signature; write it as `Transfer(address,address,uint256)`",
-                            filter.event
-                        ),
+                        format!("`{}` is not an event signature", filter.event),
+                    )
+                    .with_help(
+                        "write the full signature, e.g. `Transfer(address,address,uint256)`",
                     );
                 }
             }
@@ -134,6 +137,46 @@ fn is_event_signature(sig: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn manifest(data_source: &str) -> ProjectManifest {
+        let yaml = format!(
+            "specVersion: \"1.0\"\nname: t\nversion: \"0.1.0\"\n\
+             network: {{ family: evm, chainId: \"1\" }}\n\
+             schema: {{ file: ./schema.graphql }}\n\
+             dataSources:\n{data_source}"
+        );
+        superquery_manifest::from_str(&yaml, "test.yaml").expect("fixture parses")
+    }
+
+    #[test]
+    fn a_malformed_address_is_an_error_with_a_fix() {
+        let report = EvmIntegration.validate(&manifest(
+            "  - kind: evm/Runtime\n    options: { address: \"0x12\" }\n    handlers: []\n",
+        ));
+        let [finding] = &report.errors[..] else {
+            panic!("{report:?}");
+        };
+        assert_eq!(finding.field, "dataSources[0].options.address");
+        assert!(finding.help.is_some());
+    }
+
+    #[test]
+    fn a_missing_address_only_warns() {
+        let report =
+            EvmIntegration.validate(&manifest("  - kind: evm/Runtime\n    handlers: []\n"));
+        assert!(!report.has_errors(), "{report:?}");
+        assert_eq!(report.warnings[0].field, "dataSources[0].options.address");
+    }
+
+    #[test]
+    fn an_unknown_handler_kind_lists_the_legal_ones() {
+        let report = EvmIntegration.validate(&manifest(
+            "  - kind: evm/Runtime\n    options: { address: \"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\" }\n    \
+             handlers:\n      - { handler: h, kind: evm/CallHandler }\n",
+        ));
+        let help = report.errors[0].help.as_deref().unwrap();
+        assert!(help.contains("evm/LogHandler"), "{help}");
+    }
 
     #[test]
     fn recognises_well_formed_event_signatures() {

@@ -26,20 +26,14 @@ pub fn run(args: Args, manifest: Option<Utf8PathBuf>) -> miette::Result<()> {
     let registry = crate::context::registry();
     if let Ok(integration) = registry.get(project.manifest.network.family) {
         let chain = integration.validate(&project.manifest);
-        for (field, message) in chain.errors {
+        let findings = (chain.errors.into_iter().map(|f| (f, Severity::Error)))
+            .chain(chain.warnings.into_iter().map(|f| (f, Severity::Warning)));
+        for (finding, severity) in findings {
             report.diagnostics.push(superquery_manifest::Diagnostic {
-                field,
-                message,
-                help: None,
-                severity: Severity::Error,
-            });
-        }
-        for (field, message) in chain.warnings {
-            report.diagnostics.push(superquery_manifest::Diagnostic {
-                field,
-                message,
-                help: None,
-                severity: Severity::Warning,
+                field: finding.field,
+                message: finding.message,
+                help: finding.help,
+                severity,
             });
         }
     }

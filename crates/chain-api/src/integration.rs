@@ -55,25 +55,69 @@ pub enum KindRole {
 
 /// Findings from a family-specific validation pass.
 ///
-/// Deliberately a plain list of `(field, message)` so this crate does not have
-/// to depend on the manifest crate's diagnostic type in both directions.
+/// Deliberately its own type rather than the manifest crate's `Diagnostic`:
+/// the manifest crate sits below this one, and the CLI is the only place the
+/// two kinds of finding need to meet.
 #[derive(Debug, Clone, Default)]
 pub struct ChainValidation {
-    /// Blocking findings, as `(field path, message)`.
-    pub errors: Vec<(String, String)>,
+    /// Blocking findings.
+    pub errors: Vec<ChainFinding>,
     /// Non-blocking findings.
-    pub warnings: Vec<(String, String)>,
+    pub warnings: Vec<ChainFinding>,
 }
 
 impl ChainValidation {
-    /// Record a blocking finding.
-    pub fn error(&mut self, field: impl Into<String>, message: impl Into<String>) {
-        self.errors.push((field.into(), message.into()));
+    /// Record a blocking finding. Chain `.with_help(..)` to add a fix.
+    pub fn error(
+        &mut self,
+        field: impl Into<String>,
+        message: impl Into<String>,
+    ) -> &mut ChainFinding {
+        self.errors.push(ChainFinding::new(field, message));
+        self.errors.last_mut().expect("just pushed")
     }
 
-    /// Record a non-blocking finding.
-    pub fn warn(&mut self, field: impl Into<String>, message: impl Into<String>) {
-        self.warnings.push((field.into(), message.into()));
+    /// Record a non-blocking finding. Chain `.with_help(..)` to add a fix.
+    pub fn warn(
+        &mut self,
+        field: impl Into<String>,
+        message: impl Into<String>,
+    ) -> &mut ChainFinding {
+        self.warnings.push(ChainFinding::new(field, message));
+        self.warnings.last_mut().expect("just pushed")
+    }
+
+    /// Whether any blocking finding was recorded.
+    pub fn has_errors(&self) -> bool {
+        !self.errors.is_empty()
+    }
+}
+
+/// One family-specific finding, tied to a manifest field path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainFinding {
+    /// Dotted path to the offending field, e.g. `dataSources[0].options.address`.
+    pub field: String,
+    /// What is wrong.
+    pub message: String,
+    /// How to fix it, when there is a concrete suggestion.
+    pub help: Option<String>,
+}
+
+impl ChainFinding {
+    /// A finding with no fix suggestion yet.
+    pub fn new(field: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
+            field: field.into(),
+            message: message.into(),
+            help: None,
+        }
+    }
+
+    /// Attach a fix suggestion.
+    pub fn with_help(&mut self, help: impl Into<String>) -> &mut Self {
+        self.help = Some(help.into());
+        self
     }
 }
 
