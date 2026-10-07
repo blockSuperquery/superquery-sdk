@@ -16,26 +16,29 @@
 //! its own module, so the expansion is unit-testable without a compiler.
 
 mod entity;
+mod handler;
 
 use proc_macro::TokenStream;
-use quote::quote;
 use syn::{DeriveInput, ItemFn, parse_macro_input};
 
-/// Mark an async function as a mapping handler.
+/// Mark a function as a mapping handler.
 ///
 /// ```ignore
 /// #[handler]
 /// pub async fn handle_transfer(event: EvmLog<Transfer>) -> Result<()> { .. }
 /// ```
 ///
-/// Milestone 7 adds the generated export: `sq_handle_<name>`, the payload
-/// decode, and the panic-to-structured-error conversion.
+/// The function is left untouched. Beside it the macro adds the
+/// `sq_handle_<name>` WASM export the node calls, which decodes the payload
+/// with `HandlerInput`, runs the handler and reports an `Err` through
+/// `sq_handler_error`. Sync and async functions are both accepted; the one
+/// argument must implement `HandlerInput`.
 #[proc_macro_attribute]
-pub fn handler(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let function = parse_macro_input!(item as ItemFn);
-    // TODO(milestone-7): emit `#[unsafe(no_mangle)] pub extern "C" fn sq_handle_..`
-    // wrapping this body, plus the ABI version assertion.
-    quote!(#function).into()
+    handler::expand(attr.into(), function)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 /// Implement `superquery_sdk::store::Entity` for a generated entity struct.

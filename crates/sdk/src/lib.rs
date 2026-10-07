@@ -32,6 +32,7 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs)]
 
+mod dispatch;
 pub mod error;
 mod executor;
 pub mod host;
@@ -46,6 +47,9 @@ pub use superquery_types::{MAPPING_ABI_VERSION, MappingAbiVersion};
 /// of the SDK's public surface.
 pub use superquery_types as types;
 
+/// The ABI types behind [`sol!`], e.g. the `SolEvent` trait.
+#[cfg(feature = "evm")]
+pub use alloy_sol_types as sol_types;
 #[cfg(feature = "evm")]
 pub use alloy_sol_types::sol;
 
@@ -53,7 +57,11 @@ pub use alloy_sol_types::sol;
 /// the macros need them to.
 #[doc(hidden)]
 pub mod __private {
+    pub use crate::dispatch::dispatch;
+    #[cfg(target_arch = "wasm32")]
+    pub use crate::dispatch::run_export;
     pub use crate::error::{Error, Result};
+    pub use crate::host::abi::HandlerStatus;
     pub use superquery_types::{
         Entity as UntypedEntity, EntityId, FromValue, FromValueError, ToValue, Value,
     };
