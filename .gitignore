@@ -30,3 +30,6 @@ node_modules
 
 # Snapshot test scratch
 *.snap.new
+sdk_docs_cont.md
+
+sdk_docs_progress.md
