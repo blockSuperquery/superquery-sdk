@@ -1,0 +1,14 @@
+# expect: warning network.endpoint
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: evm
+  chainId: "1"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

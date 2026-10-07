@@ -1,0 +1,18 @@
+# expect: error dataSources[0].assets.erc20.file
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: evm
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    assets:
+      erc20:
+        file: ./abis/Missing.json
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

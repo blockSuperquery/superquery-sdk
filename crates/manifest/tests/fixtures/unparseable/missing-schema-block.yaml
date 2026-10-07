@@ -1,0 +1,13 @@
+# expect-parse: missing field `schema`
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: evm
+  chainId: "1"
+  endpoint: "https://rpc.example"
+dataSources:
+  - kind: evm/Runtime
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

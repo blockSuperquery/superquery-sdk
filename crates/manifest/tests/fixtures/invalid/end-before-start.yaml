@@ -1,0 +1,17 @@
+# expect: error dataSources[0].endBlock
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: evm
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    startBlock: 500
+    endBlock: 499
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

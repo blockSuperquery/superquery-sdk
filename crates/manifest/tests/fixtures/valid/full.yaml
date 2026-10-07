@@ -1,0 +1,46 @@
+# Every optional field the v1 format accepts.
+specVersion: "1.0"
+name: erc20-transfers
+version: "1.2.3"
+description: Every optional field set.
+license: Apache-2.0
+network:
+  family: ethereum
+  chainId: "137"
+  endpoint:
+    - "https://rpc-a.example"
+    - "https://rpc-b.example"
+  dictionary: "https://dict.example"
+startBlock: 100
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    name: token
+    startBlock: 200
+    endBlock: 300
+    options:
+      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    assets:
+      erc20:
+        file: "./abis/ERC20.json"
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler
+        filter:
+          event: "Transfer(address,address,uint256)"
+          topics: ["0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"]
+      - handler: handle_call
+        kind: evm/TransactionHandler
+        filter:
+          function: "transfer(address,uint256)"
+          from: "0x0000000000000000000000000000000000000001"
+      - handler: handle_every_tenth
+        kind: evm/BlockHandler
+        filter:
+          modulo: 10
+  - kind: evm/Runtime
+    name: second
+    handlers:
+      - handler: handle_other
+        kind: evm/LogHandler

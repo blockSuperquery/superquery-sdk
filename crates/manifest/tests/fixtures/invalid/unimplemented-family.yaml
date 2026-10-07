@@ -1,0 +1,15 @@
+# expect: error network.family
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: stellar
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: stellar/Runtime
+    handlers:
+      - handler: handle_transfer
+        kind: stellar/EventHandler

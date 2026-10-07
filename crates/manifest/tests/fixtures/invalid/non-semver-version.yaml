@@ -1,0 +1,15 @@
+# expect: warning version
+specVersion: "1.0"
+name: fixture
+version: "first"
+network:
+  family: evm
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

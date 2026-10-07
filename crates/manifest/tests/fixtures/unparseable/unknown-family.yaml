@@ -1,0 +1,15 @@
+# expect-parse: unknown variant `bitcoin`
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: bitcoin
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    handlers:
+      - handler: handle_transfer
+        kind: evm/LogHandler

@@ -1,0 +1,21 @@
+# expect: error dataSources[1].name
+specVersion: "1.0"
+name: fixture
+version: "0.1.0"
+network:
+  family: evm
+  chainId: "1"
+  endpoint: "https://rpc.example"
+schema:
+  file: "./schema.graphql"
+dataSources:
+  - kind: evm/Runtime
+    name: token
+    handlers:
+      - handler: handle_a
+        kind: evm/LogHandler
+  - kind: evm/Runtime
+    name: token
+    handlers:
+      - handler: handle_b
+        kind: evm/LogHandler

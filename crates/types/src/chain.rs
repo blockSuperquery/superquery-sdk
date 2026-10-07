@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 #[non_exhaustive]
 pub enum ChainFamily {
     /// Ethereum and EVM-compatible chains.
+    // The alias mirrors `parse`, so the manifest and the CLI flag agree.
+    #[serde(alias = "ethereum")]
     Evm,
     /// Stellar / Soroban.
     Stellar,
@@ -102,5 +104,11 @@ mod tests {
     #[test]
     fn serde_uses_the_manifest_spelling() {
         assert_eq!(serde_json::to_string(&ChainFamily::Evm).unwrap(), "\"evm\"");
+    }
+
+    #[test]
+    fn serde_accepts_every_spelling_parse_accepts() {
+        let from_json: ChainFamily = serde_json::from_str("\"ethereum\"").unwrap();
+        assert_eq!(from_json, ChainFamily::parse("ethereum").unwrap());
     }
 }
