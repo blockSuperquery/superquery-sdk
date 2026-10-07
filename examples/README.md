@@ -5,7 +5,7 @@ Complete projects that exercise the SDK end to end. Unlike `templates/`, which
 
 | Example | Status |
 |---|---|
-| `erc20-transfers` | see [`templates/evm`](../templates/evm) — promoted here once `superquery build` lands (Milestone 9) |
+| `erc20-transfers` | see [`templates/evm`](../templates/evm) — `superquery init` scaffolds it; CI checks it compiles. Promoted here once `superquery build` lands (Milestone 9) |
 | `uniswap-v3` | planned — swap events, multiple entities, relations |
 
 Each example must `validate`, `codegen` and `build` in CI. An example that

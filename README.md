@@ -67,6 +67,9 @@ cargo run -p superquery-cli -- validate -m templates/evm/project.yaml
 
 # See what codegen would write.
 cargo run -p superquery-cli -- codegen --dry-run -m templates/evm/project.yaml
+
+# Scaffold a project against this checkout.
+cargo run -p superquery-cli -- init my-indexer --sdk-path "$PWD/crates/sdk"
 ```
 
 Building a mapping needs the WASM target:
@@ -81,10 +84,10 @@ rustup target add wasm32-wasip1
 
 | Command | State |
 |---|---|
+| `superquery init` | works — scaffolds from the family's template |
 | `superquery validate` | works — manifest, schema, assets, filters |
-| `superquery codegen` | works — entities, metadata, contract bindings |
+| `superquery codegen` | works — entities, enums, metadata, contract bindings |
 | `superquery doctor` | works — toolchain and project checks |
-| `superquery init` | scaffold (Milestone 8) |
 | `superquery build` | scaffold (Milestone 9) |
 | `superquery test` | scaffold (Milestone 10) |
 

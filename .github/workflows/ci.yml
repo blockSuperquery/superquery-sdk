@@ -46,6 +46,9 @@ jobs:
       - name: Preview example code generation
         run: cargo run --locked -p superquery-cli -- codegen --dry-run -m templates/evm/project.yaml
 
+      - name: Lifecycle (init -> validate -> codegen -> cargo check)
+        run: cargo test --locked -p superquery-cli --test lifecycle -- --ignored
+
   web:
     name: web
     runs-on: ubuntu-latest

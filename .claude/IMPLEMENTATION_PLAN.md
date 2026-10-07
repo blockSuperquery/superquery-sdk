@@ -4,9 +4,11 @@ Working plan for `blockSuperquery/superquery-sdk`. Derived from
 [`docs/sdk-implementation-guide.md`](docs/sdk-implementation-guide.md), which is
 the design authority — if this plan and the guide disagree, the guide wins.
 
-**Status as of the scaffold commit:** workspace compiles, 37 tests pass,
-`superquery validate` and `superquery codegen --dry-run` work end-to-end
-against `templates/evm`.
+**Status:** the contract layer is done. `superquery init` → `validate` →
+`codegen` → `cargo check` works end-to-end (pinned by
+`crates/cli/tests/lifecycle.rs`), and the template compiles to a wasm module
+exporting `sq_mapping_abi_version`, `sq_alloc`, `sq_free` and
+`sq_handle_handle_transfer`. Next on the critical path: `superquery build`.
 
 ---
 
@@ -68,17 +70,17 @@ layering is wrong.
 
 | # | Milestone | State | Where |
 |---|---|---|---|
-| 0 | Specification documents | **stub** | `docs/spec/*.md` |
+| 0 | Specification documents | **3 of 4 at v1** — `build-artifact-v1` still a stub | `docs/spec/*.md` |
 | 1 | `superquery-types` | **done** | `crates/types` |
-| 2 | manifest crate | **mostly done** — needs fixture test suite | `crates/manifest` |
-| 3 | schema parser + canonical IR | **mostly done** — needs relation/index test coverage | `crates/schema` |
-| 4 | entity codegen | **partial** — structs generate; trait impls pending Milestone 7 | `crates/codegen` |
-| 5 | EVM ABI codegen | **partial** — emits `sol!`; no round-trip decode test yet | `crates/chains/evm` |
-| 6 | guest mapping SDK | **scaffold** — shape settled, host calls stubbed | `crates/sdk` |
-| 7 | macros | **scaffold** — both macros are pass-through | `crates/macros` |
-| 8 | CLI init/validate/codegen | **partial** — `validate` and `codegen` work; `init` stubbed | `crates/cli` |
+| 2 | manifest crate | **done** — one fixture per validation branch | `crates/manifest` |
+| 3 | schema parser + canonical IR | **done** — fixtures per rejection rule, pinned hash | `crates/schema` |
+| 4 | entity codegen | **done** — structs, enums, renames, mod tree | `crates/codegen` |
+| 5 | EVM ABI codegen | **done** — guest-side raw log decode, bindings via the SDK | `crates/chains/evm` |
+| 6 | guest mapping SDK | **done** — wasm imports/exports, native test backend | `crates/sdk` |
+| 7 | macros | **done** — `#[handler]` export + dispatch, entity derive | `crates/macros` |
+| 8 | CLI init/validate/codegen | **done** — `--network` probing still pending | `crates/cli` |
 | 9 | CLI `build` | **not started** | `crates/cli/src/commands/build.rs` |
-| 10 | testing helpers | **scaffold** — `TestStore` only | `crates/sdk/src/testing.rs` |
+| 10 | testing helpers | **partial** — `TestStore` host + `block_on`; fixtures/`run_handler` pending | `crates/sdk/src/testing.rs` |
 | 11 | web/docs | **web exists**, docs pending | `web/`, `docs/` |
 | 12 | Stellar/Solana | **reserved** | `crates/chains/{stellar,solana}` |
 
@@ -86,33 +88,7 @@ layering is wrong.
 
 ## What to build next, in order
 
-### 1. Milestone 6/7 — close the mapping ABI loop
-
-This is the critical path. Everything downstream (`build`, `test`, the node's
-runtime) is blocked on the guest/host contract being real rather than stubbed.
-
-- Write `docs/spec/mapping-abi-v1.md` first — the node team implements against
-  it, so it has to exist before the code hardens.
-- Replace the stubs in `crates/sdk/src/host/store.rs` with the actual
-  `extern "C"` block, plus the pointer/length encoding for entity payloads.
-- Make `#[handler]` generate the export symbol, the payload decode and the
-  error conversion. Test the expansion, not just that it compiles.
-- Make `#[derive(SuperQueryEntity)]` generate the `Entity` impl so the
-  `.save()` in `templates/evm/src/lib.rs` actually resolves.
-
-**Done when:** `templates/evm` compiles to `wasm32-wasip1` and exports
-`sq_mapping_abi_version` plus one `sq_handle_*` symbol.
-
-### 2. Milestone 8 — `superquery init`
-
-Cheap once templates exist, and it unblocks anyone trying the SDK.
-
-- Copy `templates/evm`, substituting the project name into `Cargo.toml` and
-  `project.yaml`.
-- Refuse to overwrite a non-empty directory.
-- Print the next three commands.
-
-### 3. Milestone 9 — deterministic `superquery build`
+### 1. Milestone 9 — deterministic `superquery build`
 
 - Write `docs/spec/build-artifact-v1.md` first.
 - Run codegen, then `cargo build --release --target wasm32-wasip1`.
@@ -120,16 +96,12 @@ Cheap once templates exist, and it unblocks anyone trying the SDK.
 - **Test determinism explicitly**: build twice, assert byte-identical output.
   A build that is 99% reproducible is not reproducible.
 
-### 4. Fixture-driven test suites (Milestones 2, 3, 5)
+### 2. Milestone 10 — the test harness
 
-The validators are written but under-tested. Add `tests/fixtures/{valid,invalid}`
-to the manifest and schema crates, one invalid fixture per validation branch,
-and assert on the diagnostic that comes back — not just that it failed.
-
-### 5. Milestone 10 — the test harness
-
-`run_handler(handler, event, &store)` against `TestStore`, so a developer can
-unit test a mapping with no RPC and no Postgres.
+`TestStore` is already a full native host and `#[handler]` emits a
+`__sq_dispatch_<name>` callable from tests. Still needed: `fixture::evm_log`
+builders and a `run_handler(handler, event, &store)` helper, so a developer
+can unit test a mapping with no RPC, no Postgres and no hand-written JSON.
 
 ---
 
@@ -158,7 +130,8 @@ should mean writing one impl and touching nothing else. If it doesn't, the seam
 is wrong.
 
 **The ABI version is a promise.** Changing anything in `crates/sdk/src/host/`
-means bumping `MAPPING_ABI_VERSION` in `crates/types`.
+means bumping `MAPPING_ABI_VERSION` in `crates/types`. (v1 was first defined
+in the commit that replaced the stubs; nothing had shipped against them.)
 
 ---
 
