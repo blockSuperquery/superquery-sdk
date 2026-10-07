@@ -2,4 +2,4 @@
 source: crates/schema/tests/ir.rs
 expression: schema_hash(&ir)
 ---
-8a518cc0fcbd366647c31f09d84fda1ffcab7228c6d2ef59ba8f4e017e51b8d1
+23549da49cfdca66ea78074445951b4f481da0c93290f68b1dd1e4178996d797

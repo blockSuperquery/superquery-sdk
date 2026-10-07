@@ -17,6 +17,9 @@ use serde::{Deserialize, Serialize};
 #[non_exhaustive]
 pub enum ScalarKind {
     /// `ID` — the entity primary key. Always a string at the storage layer.
+    // Serialised with its GraphQL spelling, like every other variant, so the
+    // schema IR never needs a translation table.
+    #[serde(rename = "ID")]
     Id,
     /// `String`.
     String,
@@ -219,6 +222,14 @@ mod tests {
             assert_eq!(ScalarKind::from_graphql_name(kind.as_str()), Some(*kind));
         }
         assert_eq!(ScalarKind::from_graphql_name("Transfer"), None);
+    }
+
+    #[test]
+    fn scalars_serialize_with_their_graphql_spelling() {
+        for kind in ScalarKind::ALL {
+            let json = serde_json::to_string(kind).unwrap();
+            assert_eq!(json, format!("\"{}\"", kind.as_str()));
+        }
     }
 
     #[test]
