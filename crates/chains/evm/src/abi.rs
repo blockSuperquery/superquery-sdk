@@ -67,8 +67,10 @@ impl LoadedAbi {
         out.push_str("#![allow(clippy::all, missing_docs, non_snake_case)]\n\n");
         out.push_str("superquery_sdk::sol! {\n");
 
+        // No serde derives: events reach the guest as raw logs and are
+        // ABI-decoded there, so the project needs no serde dependency.
         for event in self.events() {
-            out.push_str("    #[derive(Debug, serde::Serialize, serde::Deserialize)]\n");
+            out.push_str("    #[derive(Debug, PartialEq, Eq)]\n");
             out.push_str(&format!("    {};\n", event.full_signature()));
         }
 

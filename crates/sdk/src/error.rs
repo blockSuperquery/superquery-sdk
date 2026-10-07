@@ -33,6 +33,13 @@ pub enum Error {
         message: String,
     },
 
+    /// The handler payload did not decode into the handler's input type.
+    ///
+    /// The host routed something this handler cannot accept; reported as
+    /// handler status `2` rather than as a mapping failure.
+    #[error("could not decode handler payload: {0}")]
+    Payload(String),
+
     /// The mapping itself rejected the input.
     #[error("{0}")]
     Mapping(String),

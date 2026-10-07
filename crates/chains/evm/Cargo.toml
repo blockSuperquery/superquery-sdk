@@ -14,6 +14,7 @@ superquery-manifest.workspace = true
 superquery-chain-api.workspace = true
 alloy-json-abi.workspace = true
 alloy-primitives.workspace = true
+alloy-sol-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 camino.workspace = true

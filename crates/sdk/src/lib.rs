@@ -35,6 +35,7 @@
 pub mod error;
 mod executor;
 pub mod host;
+pub mod input;
 pub mod store;
 pub mod testing;
 
@@ -70,6 +71,7 @@ pub mod __private {
 /// What a mapping's `use superquery_sdk::prelude::*;` brings in.
 pub mod prelude {
     pub use crate::error::{Error, Result};
+    pub use crate::input::HandlerInput;
     pub use crate::store::{Entity as EntityTrait, Store};
     pub use superquery_macros::{SuperQueryEntity, handler};
     pub use superquery_types::{BigDecimal, BigInt, Bytes, Json, Timestamp};

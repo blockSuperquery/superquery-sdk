@@ -14,10 +14,10 @@ pub mod types;
 
 pub use integration::EvmIntegration;
 pub use kinds::{DATA_SOURCE_KINDS, HANDLER_KINDS};
-pub use types::{EvmBlock, EvmLog, EvmTransaction};
+pub use types::{EvmBlock, EvmLog, EvmTransaction, LogDecodeError, RawEvmLog};
 
 /// Types a mapping author writes against.
 pub mod prelude {
-    pub use crate::types::{EvmBlock, EvmLog, EvmTransaction};
+    pub use crate::types::{EvmBlock, EvmLog, EvmTransaction, RawEvmLog};
     pub use alloy_primitives::{Address, B256, I256, U256};
 }
