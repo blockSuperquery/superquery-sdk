@@ -1,0 +1,10 @@
+# expect: Account.transfers
+# message: cannot be indexed
+type Account @entity {
+  id: ID!
+  transfers: [Transfer!]! @derivedFrom(field: "sender") @index
+}
+type Transfer @entity {
+  id: ID!
+  sender: Account!
+}

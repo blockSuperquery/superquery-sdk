@@ -1,0 +1,5 @@
+# expect: Account
+# message: missing the `@entity` directive
+type Account {
+  id: ID!
+}

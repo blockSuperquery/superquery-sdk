@@ -1,0 +1,5 @@
+# expect: BigInt
+# message: built-in scalar
+type BigInt @entity {
+  id: ID!
+}

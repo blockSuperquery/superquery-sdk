@@ -1,0 +1,13 @@
+# expect: Account.transfers
+# message: does not point back at `Account`
+type Account @entity {
+  id: ID!
+  transfers: [Transfer!]! @derivedFrom(field: "token")
+}
+type Token @entity {
+  id: ID!
+}
+type Transfer @entity {
+  id: ID!
+  token: Token!
+}

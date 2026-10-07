@@ -1,0 +1,5 @@
+# expect: Account.id
+# message: must be declared `ID!`
+type Account @entity {
+  id: ID
+}

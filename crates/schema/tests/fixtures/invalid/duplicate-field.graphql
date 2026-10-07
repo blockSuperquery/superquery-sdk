@@ -1,0 +1,7 @@
+# expect: Account.balance
+# message: declared more than once
+type Account @entity {
+  id: ID!
+  balance: BigInt!
+  balance: BigInt!
+}

@@ -1,0 +1,8 @@
+# expect: Status
+# message: declared more than once
+enum Status {
+  ACTIVE
+}
+type Status @entity {
+  id: ID!
+}

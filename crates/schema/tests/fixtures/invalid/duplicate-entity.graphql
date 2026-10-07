@@ -1,0 +1,8 @@
+# expect: Account
+# message: declared more than once
+type Account @entity {
+  id: ID!
+}
+type Account @entity {
+  id: ID!
+}

@@ -1,0 +1,9 @@
+# expect: Account.transfers
+# message: must be `@derivedFrom`
+type Account @entity {
+  id: ID!
+  transfers: [Transfer!]!
+}
+type Transfer @entity {
+  id: ID!
+}

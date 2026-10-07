@@ -1,0 +1,6 @@
+# expect: Account.name
+# message: only valid on a field that references an entity
+type Account @entity {
+  id: ID!
+  name: String! @derivedFrom(field: "x")
+}

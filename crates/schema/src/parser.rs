@@ -47,13 +47,24 @@ pub fn parse(source: &str, name: &str) -> SchemaResult<SchemaIr> {
 
     // Pass 1: what names does this document introduce?
     let mut entity_names = BTreeSet::new();
+    let mut declared = BTreeSet::new();
     let mut enums = Vec::new();
     for def in &doc.definitions {
-        match def {
-            Definition::TypeDefinition(TypeDefinition::Object(obj)) if is_entity(obj) => {
+        let Definition::TypeDefinition(type_def) = def else {
+            continue;
+        };
+        let name = match type_def {
+            TypeDefinition::Object(obj) => &obj.name,
+            TypeDefinition::Enum(e) => &e.name,
+            _ => continue,
+        };
+        check_declaration_name(name, &mut declared)?;
+
+        match type_def {
+            TypeDefinition::Object(obj) if is_entity(obj) => {
                 entity_names.insert(obj.name.clone());
             }
-            Definition::TypeDefinition(TypeDefinition::Enum(e)) => {
+            TypeDefinition::Enum(e) => {
                 enums.push(EnumDefinition {
                     name: e.name.clone(),
                     values: e.values.iter().map(|v| v.name.clone()).collect(),
@@ -88,6 +99,27 @@ pub fn parse(source: &str, name: &str) -> SchemaResult<SchemaIr> {
     Ok(SchemaIr { entities, enums })
 }
 
+/// A type name must be new, and must not shadow a built-in scalar: the
+/// resolver checks scalars first, so `type BigInt @entity` would silently
+/// never be referenced.
+fn check_declaration_name(name: &str, declared: &mut BTreeSet<String>) -> SchemaResult<()> {
+    if ScalarKind::from_graphql_name(name).is_some() {
+        return Err(SchemaError::invalid(
+            name.to_owned(),
+            format!("`{name}` is a built-in scalar and cannot be redeclared"),
+        )
+        .with_help("rename the type"));
+    }
+    if !declared.insert(name.to_owned()) {
+        return Err(SchemaError::invalid(
+            name.to_owned(),
+            format!("type `{name}` is declared more than once"),
+        )
+        .with_help("each entity and enum name must be unique, because each becomes a table or a column type"));
+    }
+    Ok(())
+}
+
 fn is_entity(obj: &ObjectType<'_, String>) -> bool {
     obj.directives.iter().any(|d| d.name == ENTITY_DIRECTIVE)
 }
@@ -106,9 +138,16 @@ fn resolve_entity(
 
     let mut fields = Vec::with_capacity(obj.fields.len());
     let mut indexes = vec![IndexDefinition::primary_key()];
+    let mut field_names = BTreeSet::new();
 
     for field in &obj.fields {
         let location = format!("{}.{}", obj.name, field.name);
+        if !field_names.insert(field.name.as_str()) {
+            return Err(SchemaError::invalid(
+                location,
+                format!("field `{}` is declared more than once", field.name),
+            ));
+        }
         let resolved = resolve_field(field, &location, entity_names, enum_names)?;
 
         // Owned relations get an index because the node will look them up by
@@ -187,6 +226,28 @@ fn resolve_field(
 
     let relation = match field_type.referenced_entity() {
         Some(target) => {
+            let is_derived = has_directive(&field.directives, DERIVED_FROM_DIRECTIVE);
+            if field_type.is_list() && !is_derived {
+                return Err(SchemaError::invalid(
+                    location.to_owned(),
+                    format!("a list of `{target}` must be `@derivedFrom` the other side"),
+                )
+                .with_help(
+                    "store the relation on the child (`parent: Parent!`) and derive the list \
+                     with `@derivedFrom(field: \"parent\")`; for many-to-many, add a join entity",
+                ));
+            }
+            if is_derived
+                && (has_directive(&field.directives, INDEX_DIRECTIVE)
+                    || has_directive(&field.directives, UNIQUE_DIRECTIVE))
+            {
+                return Err(SchemaError::invalid(
+                    location.to_owned(),
+                    "a `@derivedFrom` field stores nothing, so it cannot be indexed",
+                )
+                .with_help("index the field it is derived from instead"));
+            }
+
             let derived_from = field
                 .directives
                 .iter()

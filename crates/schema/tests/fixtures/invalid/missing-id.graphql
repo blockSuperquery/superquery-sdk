@@ -1,0 +1,5 @@
+# expect: Account
+# message: has no `id` field
+type Account @entity {
+  name: String!
+}

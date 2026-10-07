@@ -1,0 +1,6 @@
+# expect: Transfer.value
+# message: unknown type `Uint256`
+type Transfer @entity {
+  id: ID!
+  value: Uint256!
+}
