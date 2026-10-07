@@ -66,9 +66,13 @@ impl LoadedAbi {
         out.push_str(&format!("// Source ABI: {}\n\n", self.name));
         out.push_str("#![allow(clippy::all, missing_docs, non_snake_case)]\n\n");
         out.push_str("superquery_sdk::sol! {\n");
+        // File-level, not per item: `sol!` also emits imports outside any
+        // one event. Pointing it at the SDK's re-export means a project
+        // depends on `superquery-sdk` and nothing else.
+        out.push_str("    #![sol(alloy_sol_types = superquery_sdk::sol_types)]\n\n");
 
         // No serde derives: events reach the guest as raw logs and are
-        // ABI-decoded there, so the project needs no serde dependency.
+        // ABI-decoded there.
         for event in self.events() {
             out.push_str("    #[derive(Debug, PartialEq, Eq)]\n");
             out.push_str(&format!("    {};\n", event.full_signature()));
@@ -148,6 +152,44 @@ mod tests {
             ),
             "{rendered}"
         );
+    }
+
+    #[test]
+    fn bindings_resolve_alloy_through_the_sdk() {
+        let rendered = LoadedAbi {
+            name: "ERC20".to_owned(),
+            abi: parse_abi(ERC20_TRANSFER).unwrap(),
+        }
+        .render();
+        assert!(
+            rendered.contains("#![sol(alloy_sol_types = superquery_sdk::sol_types)]"),
+            "{rendered}"
+        );
+        assert!(!rendered.contains("serde"), "{rendered}");
+    }
+
+    #[test]
+    fn the_template_abi_has_the_standard_erc20_event_selectors() {
+        // These hashes are what every ERC-20 emits as topic0; if loading the
+        // ABI ever produced anything else, no real log would decode.
+        let abi = parse_abi(include_str!("../../../../templates/evm/abis/ERC20.json")).unwrap();
+        assert_eq!(
+            abi.events["Transfer"][0].selector().to_string(),
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+        );
+        assert_eq!(
+            abi.events["Approval"][0].selector().to_string(),
+            "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+        );
+    }
+
+    #[test]
+    fn the_template_bindings_are_pinned() {
+        let loaded = LoadedAbi {
+            name: "erc20".to_owned(),
+            abi: parse_abi(include_str!("../../../../templates/evm/abis/ERC20.json")).unwrap(),
+        };
+        insta::assert_snapshot!("template_erc20_bindings", loaded.render());
     }
 
     #[test]

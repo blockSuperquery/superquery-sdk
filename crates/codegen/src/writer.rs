@@ -3,6 +3,8 @@
 //! Writing is separated from generating so codegen can be tested without a
 //! filesystem, and so the CLI can diff or dry-run before touching a project.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use camino::{Utf8Path, Utf8PathBuf};
 
 use crate::error::{CodegenError, CodegenResult};
@@ -35,40 +37,64 @@ impl OutputSet {
         self
     }
 
-    /// Sort by path, making the set canonical.
+    /// Add the `mod.rs` files that tie the set into one module tree, then
+    /// sort by path so the set is canonical.
+    ///
+    /// Every directory gets a `mod.rs` declaring its files and
+    /// subdirectories, so `mod generated;` in a mapping resolves no matter
+    /// which chain integrations contributed files.
     pub fn finish(mut self) -> Self {
+        let tree = self.module_tree();
+        self.files.retain(|f| f.path.file_name() != Some("mod.rs"));
+        self.files.extend(tree);
         self.files.sort_by(|a, b| a.path.cmp(&b.path));
         self
     }
 
-    /// Emit the `mod` declarations tying the generated files together.
-    pub fn module_root(&self) -> GeneratedFile {
-        let mut out = String::from(crate::GENERATED_HEADER);
-        out.push_str("//! Generated code. Re-run `superquery codegen` after changing\n");
-        out.push_str("//! `schema.graphql` or any ABI.\n\n");
+    fn module_tree(&self) -> Vec<GeneratedFile> {
+        // directory -> child module names; BTree for deterministic output.
+        let mut dirs: BTreeMap<Utf8PathBuf, BTreeSet<String>> = BTreeMap::new();
+        dirs.entry(Utf8PathBuf::new()).or_default();
 
-        // Files sitting directly in the output root become `pub mod` lines;
-        // anything nested is covered by its own directory module below.
-        let mut top_level: Vec<&str> = self
+        for file in self
             .files
             .iter()
-            .filter(|f| f.path.components().count() == 1)
-            .filter_map(|f| f.path.file_stem())
-            .collect();
-        top_level.sort_unstable();
-        top_level.dedup();
+            .filter(|f| f.path.extension() == Some("rs"))
+        {
+            let mut child = file.path.clone();
+            let mut module = child.file_stem().unwrap_or_default().to_owned();
+            while let Some(parent) = child.parent() {
+                if module != "mod" {
+                    dirs.entry(parent.to_owned()).or_default().insert(module);
+                }
+                module = parent.file_name().unwrap_or_default().to_owned();
+                child = parent.to_owned();
+                if child.as_str().is_empty() {
+                    break;
+                }
+            }
+        }
 
-        for module in top_level {
-            out.push_str(&format!("pub mod {module};\n"));
-        }
-        if self.files.iter().any(|f| f.path.starts_with("contracts")) {
-            out.push_str("pub mod contracts;\n");
-        }
-
-        GeneratedFile {
-            path: "mod.rs".into(),
-            contents: out,
-        }
+        dirs.into_iter()
+            .map(|(dir, modules)| {
+                let mut out = String::from(crate::GENERATED_HEADER);
+                if dir.as_str().is_empty() {
+                    out.push_str(
+                        "//! Generated code. Re-run `superquery codegen` after changing\n",
+                    );
+                    out.push_str("//! `schema.graphql` or any ABI.\n\n");
+                } else {
+                    out.push('\n');
+                }
+                for module in modules {
+                    out.push_str(&format!("pub mod {module};\n"));
+                }
+                GeneratedFile {
+                    path: dir.join("mod.rs"),
+                    contents: out,
+                }
+            })
+            .collect()
     }
 }
 
@@ -100,4 +126,61 @@ pub fn write_output_set(root: &Utf8Path, set: &OutputSet) -> CodegenResult<Vec<U
     }
 
     Ok(written)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn file(path: &str) -> GeneratedFile {
+        GeneratedFile {
+            path: path.into(),
+            contents: String::new(),
+        }
+    }
+
+    fn contents<'a>(set: &'a OutputSet, path: &str) -> &'a str {
+        &set.files
+            .iter()
+            .find(|f| f.path == path)
+            .expect(path)
+            .contents
+    }
+
+    #[test]
+    fn every_directory_gets_a_mod_rs_declaring_its_children() {
+        let mut set = OutputSet::new();
+        set.push(file("schema_metadata.rs"))
+            .push(file("entities.rs"))
+            .push(file("contracts/erc20.rs"))
+            .push(file("contracts/pool.rs"));
+        let set = set.finish();
+
+        let root = contents(&set, "mod.rs");
+        assert!(
+            root.contains("pub mod contracts;\npub mod entities;\npub mod schema_metadata;\n"),
+            "{root}"
+        );
+        let contracts = contents(&set, "contracts/mod.rs");
+        assert!(
+            contracts.ends_with("pub mod erc20;\npub mod pool;\n"),
+            "{contracts}"
+        );
+    }
+
+    #[test]
+    fn an_empty_set_still_has_a_root_module() {
+        let set = OutputSet::new().finish();
+        assert_eq!(set.files.len(), 1);
+        assert_eq!(set.files[0].path, "mod.rs");
+    }
+
+    #[test]
+    fn finishing_twice_is_idempotent() {
+        let mut set = OutputSet::new();
+        set.push(file("entities.rs"))
+            .push(file("contracts/erc20.rs"));
+        let once = set.finish();
+        assert_eq!(once.clone().finish(), once);
+    }
 }

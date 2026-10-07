@@ -14,6 +14,8 @@ use crate::writer::GeneratedFile;
 pub fn generate(ir: &SchemaIr) -> GeneratedFile {
     let mut out = String::from(GENERATED_HEADER);
     out.push_str("//! Schema metadata generated from `schema.graphql`.\n\n");
+    // Read by tooling and the host, not necessarily by the mapping itself.
+    out.push_str("#![allow(dead_code)]\n\n");
     out.push_str(
         "/// The canonical schema IR this mapping was built against.\n\
          ///\n\
