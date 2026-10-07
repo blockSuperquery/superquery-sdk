@@ -138,6 +138,23 @@ impl Value {
         })
     }
 
+    /// The variant name, for error messages.
+    pub const fn type_name(&self) -> &'static str {
+        match self {
+            Value::Null => "Null",
+            Value::String(_) => "String",
+            Value::Boolean(_) => "Boolean",
+            Value::Int(_) => "Int",
+            Value::BigInt(_) => "BigInt",
+            Value::Float(_) => "Float",
+            Value::BigDecimal(_) => "BigDecimal",
+            Value::Bytes(_) => "Bytes",
+            Value::Date(_) => "Date",
+            Value::Json(_) => "Json",
+            Value::List(_) => "List",
+        }
+    }
+
     /// Borrow the value as a string, for `String`/`ID` fields.
     pub fn as_str(&self) -> Option<&str> {
         match self {
