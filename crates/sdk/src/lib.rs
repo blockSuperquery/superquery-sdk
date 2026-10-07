@@ -27,7 +27,9 @@
 //!
 //! Milestone 6 of `docs/IMPLEMENTATION_PLAN.md`.
 
-#![forbid(unsafe_code)]
+// `deny` rather than `forbid`: the WASM boundary in `host::wasm` is the one
+// place that must handle raw pointers, and it opts back in explicitly.
+#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 pub mod error;
