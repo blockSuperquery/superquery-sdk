@@ -9,7 +9,7 @@ use graphql_parser::schema::{
     Definition, Directive, Document, Field as GqlField, ObjectType, Type as GqlType,
     TypeDefinition, Value as GqlValue,
 };
-use miette::NamedSource;
+use miette::{NamedSource, SourceSpan};
 use std::collections::BTreeSet;
 use superquery_types::ScalarKind;
 
@@ -38,12 +38,14 @@ pub fn parse_file(path: &Utf8Path) -> SchemaResult<SchemaIr> {
 
 /// Parse a schema from source. `name` labels the source in diagnostics.
 pub fn parse(source: &str, name: &str) -> SchemaResult<SchemaIr> {
-    let doc: Document<'_, String> =
-        graphql_parser::parse_schema(source).map_err(|err| SchemaError::Syntax {
-            message: err.to_string(),
+    let doc: Document<'_, String> = graphql_parser::parse_schema(source).map_err(|err| {
+        let raw = err.to_string();
+        SchemaError::Syntax {
+            message: syntax_message(&raw),
             src: NamedSource::new(name, source.to_owned()).with_language("graphql"),
-            span: None,
-        })?;
+            span: syntax_span(source, &raw),
+        }
+    })?;
 
     // Pass 1: what names does this document introduce?
     let mut entity_names = BTreeSet::new();
@@ -118,6 +120,48 @@ fn check_declaration_name(name: &str, declared: &mut BTreeSet<String>) -> Schema
         .with_help("each entity and enum name must be unique, because each becomes a table or a column type"));
     }
     Ok(())
+}
+
+/// graphql-parser reports `schema parse error: Parse error at L:C` followed by
+/// what it found and what it wanted. The position becomes the span, so the
+/// message keeps only the explanation.
+fn syntax_message(raw: &str) -> String {
+    let explanation: Vec<&str> = raw
+        .lines()
+        .skip(1)
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect();
+    if explanation.is_empty() {
+        return raw.to_owned();
+    }
+    format!("invalid GraphQL: {}", explanation.join("; "))
+}
+
+/// The span of the token at graphql-parser's reported `line:column`.
+fn syntax_span(source: &str, raw: &str) -> Option<SourceSpan> {
+    let position = raw.lines().next()?.rsplit(' ').next()?;
+    let (line, column) = position.split_once(':')?;
+    let (line, column): (usize, usize) = (line.parse().ok()?, column.parse().ok()?);
+
+    let line_start: usize = source
+        .split_inclusive('\n')
+        .take(line.checked_sub(1)?)
+        .map(str::len)
+        .sum();
+    let line_text = source[line_start..].lines().next().unwrap_or("");
+    // Columns count characters, not bytes; clamp in case the parser points one
+    // past the end of the line.
+    let column_byte = line_text
+        .char_indices()
+        .nth(column.saturating_sub(1))
+        .map_or(line_text.len(), |(i, _)| i);
+    let token_len = line_text[column_byte..]
+        .find(char::is_whitespace)
+        .unwrap_or(line_text.len() - column_byte)
+        .max(1);
+
+    Some(SourceSpan::from((line_start + column_byte, token_len)))
 }
 
 fn is_entity(obj: &ObjectType<'_, String>) -> bool {
@@ -368,4 +412,34 @@ fn directive_bool(directive: &Directive<'_, String>, arg: &str) -> Option<bool> 
             GqlValue::Boolean(b) => Some(*b),
             _ => None,
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn syntax_error(source: &str) -> (String, Option<SourceSpan>) {
+        match parse(source, "test.graphql") {
+            Err(SchemaError::Syntax { message, span, .. }) => (message, span),
+            other => panic!("expected a syntax error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_syntax_error_underlines_the_offending_token() {
+        let source = "type A @entity {\n  id: ID!\n  x: \n}\n";
+        let (message, span) = syntax_error(source);
+        let span = span.expect("a span");
+        assert_eq!(&source[span.offset()..span.offset() + span.len()], "}");
+        assert!(message.starts_with("invalid GraphQL: "), "{message}");
+        assert!(!message.contains("Parse error at"), "{message}");
+    }
+
+    #[test]
+    fn spans_count_columns_in_characters_not_bytes() {
+        let source = "\"\"\"é\"\"\" type A @entity { id: ID! ) }";
+        let (_, span) = syntax_error(source);
+        let span = span.expect("a span");
+        assert_eq!(&source[span.offset()..span.offset() + span.len()], ")");
+    }
 }
