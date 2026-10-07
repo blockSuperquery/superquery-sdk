@@ -60,7 +60,7 @@ fn with_backend<T>(call: &'static str, f: impl FnOnce(&dyn HostBackend) -> T) ->
         None => Err(Error::Host {
             call,
             message: "no host attached; outside WASM, install one with \
-                      `superquery_sdk::testing::TestHost`"
+                      `superquery_sdk::testing::TestStore`"
                 .to_owned(),
         }),
     }

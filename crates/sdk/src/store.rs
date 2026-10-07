@@ -1,8 +1,8 @@
 //! The entity store, as a mapping sees it.
 //!
-//! Scaffold: the trait shape is settled, the host wiring is not. `save()`
-//! currently round-trips through [`crate::host::store`], whose implementation
-//! is a stub until Milestone 6.
+//! Typed entities lower to [`UntypedEntity`] and travel through
+//! [`crate::host::store`]; the mapping never sees a connection, a transaction
+//! or a table.
 
 use superquery_types::{Entity as UntypedEntity, EntityId, EntityKey};
 

@@ -33,6 +33,7 @@
 #![warn(missing_docs)]
 
 pub mod error;
+mod executor;
 pub mod host;
 pub mod store;
 pub mod testing;
