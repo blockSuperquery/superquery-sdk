@@ -8,7 +8,7 @@ against them alone, without reading this repo's source.
 |---|---|---|
 | [`manifest-v1.md`](manifest-v1.md) | v1 | node, CLI |
 | [`schema-v1.md`](schema-v1.md) | v1 | node, query, codegen |
-| [`mapping-abi-v1.md`](mapping-abi-v1.md) | stub | node runtime, SDK guest |
+| [`mapping-abi-v1.md`](mapping-abi-v1.md) | v1 | node runtime, SDK guest |
 | [`build-artifact-v1.md`](build-artifact-v1.md) | stub | node |
 
 A spec is *v1* when the document and the code agree and every rule it states
