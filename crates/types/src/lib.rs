@@ -25,7 +25,7 @@ pub use block::{BlockHash, BlockNumber, BlockPtr};
 pub use chain::ChainFamily;
 pub use entity::{Entity, EntityId, EntityKey};
 pub use id::ProjectId;
-pub use newtypes::{BigDecimal, BigInt, Bytes, Json, Timestamp};
+pub use newtypes::{BigDecimal, BigInt, Bytes, InvalidDecimal, Json, Timestamp};
 pub use scalar::{ScalarKind, Value};
 pub use spec_version::SpecVersion;
 

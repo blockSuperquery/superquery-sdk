@@ -38,6 +38,14 @@ pub enum Error {
     Mapping(String),
 }
 
+// A value that will not encode is a bug in the mapping's input handling, so it
+// surfaces as a mapping error carrying the offending text.
+impl From<superquery_types::InvalidDecimal> for Error {
+    fn from(err: superquery_types::InvalidDecimal) -> Self {
+        Self::Mapping(err.to_string())
+    }
+}
+
 impl Error {
     /// Build a mapping-authored error.
     pub fn mapping(message: impl Into<String>) -> Self {

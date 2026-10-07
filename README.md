@@ -99,7 +99,7 @@ pub async fn handle_transfer(event: EvmLog<Transfer>) -> Result<()> {
         id: event.id(),
         from: event.params.from.to_string(),
         to: event.params.to.to_string(),
-        value: BigInt::new(event.params.value.to_string()),
+        value: BigInt::new(event.params.value.to_string())?,
     }
     .save()
     .await
