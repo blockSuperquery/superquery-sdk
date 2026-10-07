@@ -5,6 +5,7 @@ use superquery_manifest::{DataSource, ProjectManifest};
 use superquery_types::ChainFamily;
 
 use crate::codegen::GeneratedModule;
+use crate::template::ProjectTemplate;
 
 /// One chain family's developer-facing knowledge.
 pub trait ChainIntegration: Send + Sync {
@@ -30,6 +31,11 @@ pub trait ChainIntegration: Send + Sync {
         data_source: &DataSource,
         base_dir: &Utf8Path,
     ) -> Result<Vec<GeneratedModule>, CodegenError>;
+
+    /// The starter project `superquery init` writes, if this family has one.
+    fn template(&self) -> Option<&'static ProjectTemplate> {
+        None
+    }
 }
 
 /// One legal `<family>/<Kind>` value.

@@ -14,9 +14,11 @@
 pub mod codegen;
 pub mod integration;
 pub mod registry;
+pub mod template;
 
 pub use codegen::{GeneratedFile, GeneratedModule};
 pub use integration::{
     ChainFinding, ChainIntegration, ChainValidation, CodegenError, KindRole, KindSpec,
 };
 pub use registry::{Registry, UnsupportedFamily};
+pub use template::{ProjectTemplate, TemplateFile};

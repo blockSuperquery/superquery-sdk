@@ -3,7 +3,7 @@
 use alloy_primitives::Address;
 use camino::Utf8Path;
 use superquery_chain_api::{
-    ChainIntegration, ChainValidation, CodegenError, GeneratedModule, KindSpec,
+    ChainIntegration, ChainValidation, CodegenError, GeneratedModule, KindSpec, ProjectTemplate,
 };
 use superquery_manifest::{DataSource, HandlerFilter, ProjectManifest};
 use superquery_types::ChainFamily;
@@ -114,6 +114,10 @@ impl ChainIntegration for EvmIntegration {
                 Ok(LoadedAbi::load(name, &path)?.generate())
             })
             .collect()
+    }
+
+    fn template(&self) -> Option<&'static ProjectTemplate> {
+        Some(&crate::template::TEMPLATE)
     }
 }
 

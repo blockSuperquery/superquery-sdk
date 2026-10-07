@@ -10,6 +10,7 @@
 pub mod abi;
 pub mod integration;
 pub mod kinds;
+pub mod template;
 pub mod types;
 
 pub use integration::EvmIntegration;
